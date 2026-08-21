@@ -1,22 +1,16 @@
 {
     "version": 2,
-    "functions": {
-        "api/*.js": {
-            "runtime": "nodejs20.x"
-        }
-    },
-    "rewrites": [
+    "routes": [
         {
-            "source": "/api/(.*)",
-            "destination": "/api/$1"
+            "handle": "filesystem"
         },
         {
-            "source": "/",
-            "destination": "/frontend/index.html"
+            "src": "/",
+            "dest": "/frontend/index.html"
         },
         {
-            "source": "/(.*)",
-            "destination": "/frontend/$1"
+            "src": "/(.*)",
+            "dest": "/frontend/$1"
         }
     ]
 }
