@@ -17,3 +17,8 @@ Thumbs.db
 
 # Logs
 *.log
+node_modules/
+.env
+backend/.env
+backend/target/
+backend/maven-bin/

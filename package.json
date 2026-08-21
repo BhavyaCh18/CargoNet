@@ -1,0 +1,26 @@
+{
+  "name": "cargonet",
+  "version": "1.0.0",
+  "description": "> **One-Line Pitch:** A platform matching businesses needing to ship cargo with trucks already on the road (especially trucks making empty return trips), reducing empty-truck mileage, lowering freight costs, and increasing transporter revenue.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BhavyaCh18/CargoNet.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BhavyaCh18/CargoNet/issues"
+  },
+  "homepage": "https://github.com/BhavyaCh18/CargoNet#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0"
+  }
+}
