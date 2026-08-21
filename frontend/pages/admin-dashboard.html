@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Operations Dashboard | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="../index.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">👨💼</div>
+        <div class="brand-text">
+          <span class="brand-title">ADMIN CONTROL PANEL</span>
+          <span class="brand-subtitle">PLATFORM MONITORING & METRICS</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <div>
+        <h1 style="font-size:1.8rem; font-weight:800; color:#0B1220;">PLATFORM OVERVIEW & METRICS</h1>
+        <p style="color:#64748B;">Monitor network users, verified trucks, active bookings, and return-load reduction impact.</p>
+      </div>
+    </div>
+
+    <!-- Admin Sub Nav -->
+    <div class="card" style="padding:14px 20px; display:flex; gap:16px; align-items:center; background:#F8FAFC;">
+      <a href="admin-dashboard.html" style="font-weight:800; text-decoration:underline;">Overview</a>
+      <span>|</span>
+      <a href="users.html">Users Management</a>
+      <span>|</span>
+      <a href="trucks.html">Trucks</a>
+      <span>|</span>
+      <a href="cargo.html">Cargo</a>
+      <span>|</span>
+      <a href="bookings.html">Bookings</a>
+      <span>|</span>
+      <a href="complaints.html">Complaints & Support</a>
+    </div>
+
+    <!-- KPI Cards Grid (Section 35) -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">TOTAL USERS</div>
+        <div class="kpi-value" id="stat-total-users">0</div>
+        <div class="kpi-subtext">Registered Accounts</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">BUSINESSES</div>
+        <div class="kpi-value" id="stat-businesses">0</div>
+        <div class="kpi-subtext">Shippers / Cargo Owners</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">TRUCK OWNERS</div>
+        <div class="kpi-value" id="stat-truck-owners">0</div>
+        <div class="kpi-subtext">Transporters</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">REGISTERED TRUCKS</div>
+        <div class="kpi-value" id="stat-trucks">0</div>
+        <div class="kpi-subtext">Fleet Vehicles</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">POSTED CARGO</div>
+        <div class="kpi-value" id="stat-cargo">0</div>
+        <div class="kpi-subtext">Total Shipments</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">ACTIVE BOOKINGS</div>
+        <div class="kpi-value" id="stat-active-bookings">0</div>
+        <div class="kpi-subtext">In-Transit / Confirmed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">COMPLETED DELIVERIES</div>
+        <div class="kpi-value" id="stat-completed-deliveries">0</div>
+        <div class="kpi-subtext">Successful Trips</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">RETURN LOADS MATCHED</div>
+        <div class="kpi-value" id="stat-return-matched" style="color:#F97316;">0</div>
+        <div class="kpi-subtext">🔥 Shared Transport Matches</div>
+      </div>
+    </div>
+
+    <!-- Highlight Impact Card -->
+    <div class="card" style="background:#0B1220; color:#FFFFFF; border-left:4px solid #F97316;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span class="return-load-badge">🌱 SUSTAINABILITY & LOGISTICS IMPACT</span>
+          <h3 style="font-size:1.4rem; font-weight:800; margin-top:8px;">ESTIMATED EMPTY TRIPS REDUCED</h3>
+          <p style="color:#94A3B8; font-size:0.9rem;">Total empty return legs eliminated across Indian corridors through return-load matching.</p>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:3rem; font-weight:900; color:#F97316;" id="stat-empty-reduced">0</div>
+          <span style="font-size:0.75rem; color:#CBD5E1; text-transform:uppercase; font-weight:700;">EMPTY LEGS SAVED</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>&copy; 2026 India Shared Transport Network. Admin Console.</p>
+  </footer>
+
+  <script type="module">
+    import { AdminModule } from '../js/admin.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      AdminModule.initDashboard();
+    });
+  </script>
+</body>
+</html>

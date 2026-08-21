@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transporter Earnings | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="truck-owner-dashboard.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">💰</div>
+        <div class="brand-text">
+          <span class="brand-title">TRANSPORTER EARNINGS</span>
+          <span class="brand-subtitle">REVENUE & RETURN LOAD PROFITS</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">TOTAL EARNINGS</div>
+        <div class="kpi-value" id="total-earnings">₹0</div>
+        <div class="kpi-subtext">All Completed Trips</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">RETURN LOAD REVENUE</div>
+        <div class="kpi-value" id="return-earnings">₹0</div>
+        <div class="kpi-subtext">Bonus Revenue Saved From Empty Leg</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">TRIPS COMPLETED</div>
+        <div class="kpi-value" id="trips-completed">0</div>
+        <div class="kpi-subtext">Outbound & Return</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">EMPTY MILES REDUCED</div>
+        <div class="kpi-value" id="empty-miles">0 KM</div>
+        <div class="kpi-subtext">Zero Empty Miles Impact</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">EARNINGS BREAKDOWN BY BOOKING</div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking Code</th>
+              <th>Vehicle</th>
+              <th>Route</th>
+              <th>Trip Type</th>
+              <th>Revenue</th>
+            </tr>
+          </thead>
+          <tbody id="earnings-list">
+            <tr><td colspan="5" style="text-align:center; padding:20px;">Loading earnings data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { API } from '../js/api.js';
+    import { Auth } from '../js/auth.js';
+
+    async function loadEarnings() {
+      if (!Auth.requireRole(['TRUCK_OWNER', 'TRANSPORTER'])) return;
+      try {
+        const bookings = await API.get('/bookings/my-bookings');
+        const completed = bookings.filter(b => b.status === 'DELIVERED');
+        
+        let total = 0;
+        let returnTotal = 0;
+        let returnCount = 0;
+
+        completed.forEach(b => {
+          total += (b.transportCost || 0);
+          if (b.isReturnLoad) {
+            returnTotal += (b.transportCost || 0);
+            returnCount++;
+          }
+        });
+
+        document.getElementById('total-earnings').innerText = '₹' + total.toLocaleString('en-IN');
+        document.getElementById('return-earnings').innerText = '₹' + returnTotal.toLocaleString('en-IN');
+        document.getElementById('trips-completed').innerText = completed.length;
+        document.getElementById('empty-miles').innerText = (returnCount * 620) + ' KM';
+
+        const list = document.getElementById('earnings-list');
+        if (completed.length === 0) {
+          list.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748B;">No completed trips yet. Complete deliveries to see revenue.</td></tr>`;
+          return;
+        }
+
+        list.innerHTML = completed.map(b => `
+          <tr>
+            <td><strong>${b.bookingCode}</strong></td>
+            <td>${b.vehicleNumber}</td>
+            <td>${b.pickupLocation} → ${b.destination}</td>
+            <td>${b.isReturnLoad ? '<span class="return-load-badge">RETURN LOAD 🔥</span>' : '<span class="pill-badge">OUTBOUND</span>'}</td>
+            <td><strong>₹${b.transportCost?.toLocaleString('en-IN')}</strong></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error("Error loading earnings:", err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadEarnings);
+  </script>
+</body>
+</html>

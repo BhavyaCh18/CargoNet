@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Truck | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="truck-owner-dashboard.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">🚛</div>
+        <div class="brand-text">
+          <span class="brand-title">REGISTER TRUCK</span>
+          <span class="brand-subtitle">ADD FLEET VEHICLE</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container" style="max-width:680px;">
+    <div class="card">
+      <h2 class="card-title">REGISTER NEW TRUCK</h2>
+      <form id="register-truck-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="vehicleNumber">VEHICLE NUMBER</label>
+            <input type="text" id="vehicleNumber" class="form-control" placeholder="e.g. AP39XX1234" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vehicleType">VEHICLE TYPE</label>
+            <select id="vehicleType" class="form-control" required>
+              <option value="Container 20ft">Container 20ft</option>
+              <option value="Container 32ft">Container 32ft</option>
+              <option value="Open Body">Open Body</option>
+              <option value="Refrigerated">Refrigerated</option>
+              <option value="Trailer">Trailer</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="maxCapacity">MAXIMUM CAPACITY (IN TONS)</label>
+          <input type="number" step="0.1" id="maxCapacity" class="form-control" placeholder="e.g. 20" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="currentLocation">CURRENT LOCATION (CITY)</label>
+            <input type="text" id="currentLocation" class="form-control" placeholder="e.g. Hyderabad" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="originalPickupLocation">ORIGINAL PICKUP LOCATION</label>
+            <input type="text" id="originalPickupLocation" class="form-control" placeholder="e.g. Hyderabad" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="destination">EXPECTED DESTINATION (CITY)</label>
+          <input type="text" id="destination" class="form-control" placeholder="e.g. Bengaluru" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="availabilityDate">AVAILABILITY DATE</label>
+            <input type="date" id="availabilityDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="expectedDestinationDate">EXPECTED DESTINATION DATE</label>
+            <input type="date" id="expectedDestinationDate" class="form-control" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-solid-dark btn-block">REGISTER TRUCK & SAVE TO FLEET &rarr;</button>
+      </form>
+    </div>
+  </main>
+
+  <script type="module">
+    import { TruckOwnerModule } from '../js/truck-owner.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('availabilityDate').value = today;
+      document.getElementById('expectedDestinationDate').value = today;
+      TruckOwnerModule.initRegisterForm();
+    });
+  </script>
+</body>
+</html>

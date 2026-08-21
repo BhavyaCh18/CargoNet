@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truck Fleet Audit | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="admin-dashboard.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">🚛</div>
+        <div class="brand-text">
+          <span class="brand-title">ALL TRUCKS</span>
+          <span class="brand-subtitle">REGISTERED FLEET AUDIT</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container">
+    <div class="card">
+      <div class="card-title">ALL REGISTERED NETWORK TRUCKS</div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Vehicle Number</th>
+              <th>Type</th>
+              <th>Owner / Transporter</th>
+              <th>Current Route</th>
+              <th>Capacity</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="admin-trucks-list">
+            <tr><td colspan="7" style="text-align:center; padding:20px;">Loading trucks...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { AdminModule } from '../js/admin.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      AdminModule.loadTrucks();
+    });
+  </script>
+</body>
+</html>

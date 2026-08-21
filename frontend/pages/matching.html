@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truck Matching | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="business-dashboard.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">⚡</div>
+        <div class="brand-text">
+          <span class="brand-title">MATCHING ENGINE</span>
+          <span class="brand-subtitle">FIND AVAILABLE TRUCKS</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container">
+    <div id="cargo-details-header"></div>
+
+    <h2 class="section-title" style="margin-bottom:20px;">AVAILABLE MATCHING TRUCKS</h2>
+
+    <div id="matching-results-container">
+      <div class="card"><p style="color:#64748B;">Searching real MySQL database for route & capacity matches...</p></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { MatchingModule } from '../js/matching.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      MatchingModule.init();
+    });
+  </script>
+</body>
+</html>

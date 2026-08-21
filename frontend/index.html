@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>India Shared Transport Network | Empty-Return Truck Matching Platform</title>
+  <meta name="description" content="Match inter-city cargo with available truck capacity on empty-return legs across major Indian transport corridors.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- HEADER BAR (DARK NAVY BACKGROUND, FULL WIDTH) -->
+  <header class="app-header">
+    <div class="brand-container">
+      <div class="brand-icon-badge">🚚</div>
+      <div class="brand-text">
+        <span class="brand-title">INDIA SHARED</span>
+        <span class="brand-subtitle">TRANSPORT NETWORK</span>
+      </div>
+    </div>
+    <div class="header-nav" id="header-nav-actions">
+      <a href="pages/login.html" class="btn btn-ghost-light">Login</a>
+      <a href="pages/register.html" class="btn btn-solid-white">Register Free</a>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <main class="hero-section">
+    <!-- 1. Small Pill/Badge -->
+    <div class="pill-badge">
+      🔄 SIGNATURE INNOVATION: RETURN-LOAD MATCHING
+    </div>
+
+    <!-- 2. Large Bold Heading -->
+    <h1 class="hero-heading">
+      🚚 INDIA SHARED TRANSPORT NETWORK
+    </h1>
+
+    <!-- 3. Subheading -->
+    <p class="hero-subheading">
+      Choose how you want to continue
+    </p>
+
+    <!-- 4. Section Heading -->
+    <h2 class="section-title">
+      SELECT YOUR ROLE
+    </h2>
+
+    <!-- ROLE-SELECTOR CARDS (3 CARDS IN A ROW) -->
+    <div class="roles-grid">
+      <!-- Card 1: Business -->
+      <div class="role-card">
+        <div class="role-emoji">🏢</div>
+        <h3 class="role-title">BUSINESS</h3>
+        <p class="role-desc">Find Transportation & Book Matching Trucks for Inter-City Cargo</p>
+        <a href="pages/login.html?role=BUSINESS" class="btn btn-solid-dark btn-block">
+          Find Transportation &rarr;
+        </a>
+      </div>
+
+      <!-- Card 2: Truck Owner -->
+      <div class="role-card">
+        <div class="role-emoji">🚛</div>
+        <h3 class="role-title">TRUCK OWNER</h3>
+        <p class="role-desc">List Your Truck & Find 🔥 Return Load Cargo Opportunities</p>
+        <a href="pages/login.html?role=TRUCK_OWNER" class="btn btn-solid-dark btn-block">
+          List Your Truck 🚚
+        </a>
+      </div>
+
+      <!-- Card 3: Admin -->
+      <div class="role-card">
+        <div class="role-emoji">👨💼</div>
+        <h3 class="role-title">ADMIN</h3>
+        <p class="role-desc">Manage Platform, Verify Trucks, Users & Monitor Logistics Operations</p>
+        <a href="pages/login.html?role=ADMIN" class="btn btn-solid-dark btn-block">
+          Manage Platform 👤
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="app-footer">
+    <p>&copy; 2026 India Shared Transport Network. Empowering Zero-Empty-Miles Logistics across India.</p>
+  </footer>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

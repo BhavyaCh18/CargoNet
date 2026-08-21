@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truck Bookings | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="truck-owner-dashboard.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">📋</div>
+        <div class="brand-text">
+          <span class="brand-title">TRANSPORTER BOOKINGS</span>
+          <span class="brand-subtitle">TRIP DELIVERIES & STATUS</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container">
+    <div class="card">
+      <div class="card-title">
+        <span>BOOKINGS & TRIP STATUS MANAGEMENT</span>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking Code</th>
+              <th>Vehicle</th>
+              <th>Cargo</th>
+              <th>Route</th>
+              <th>Cost</th>
+              <th>Status</th>
+              <th>Update Status</th>
+            </tr>
+          </thead>
+          <tbody id="truck-bookings-list">
+            <tr><td colspan="7" style="text-align:center; padding:20px;">Loading bookings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { TruckOwnerModule } from '../js/truck-owner.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      TruckOwnerModule.loadMyBookings();
+    });
+  </script>
+</body>
+</html>

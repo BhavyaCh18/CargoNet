@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Dashboard | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="../index.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">🏢</div>
+        <div class="brand-text">
+          <span class="brand-title">BUSINESS HUB</span>
+          <span class="brand-subtitle">CARGO & SHIPMENT MANAGER</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <div>
+        <h1 style="font-size:1.8rem; font-weight:800; color:#0B1220;">BUSINESS DASHBOARD</h1>
+        <p style="color:#64748B;">Manage your cargo shipments, find matching trucks, and track active deliveries.</p>
+      </div>
+      <div>
+        <a href="create-cargo.html" class="btn btn-solid-dark">+ CREATE CARGO</a>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Sub-Bar -->
+    <div class="card" style="padding:14px 20px; display:flex; gap:16px; align-items:center; background:#F8FAFC;">
+      <a href="business-dashboard.html" style="font-weight:800; text-decoration:underline;">Dashboard</a>
+      <span>|</span>
+      <a href="create-cargo.html">Create Cargo</a>
+      <span>|</span>
+      <a href="business-bookings.html">Bookings & Status</a>
+      <span>|</span>
+      <a href="tracking.html">Shipment Tracking</a>
+    </div>
+
+    <!-- Active Cargo Table -->
+    <div class="card">
+      <div class="card-title">
+        <span>MY CARGO POSTINGS</span>
+        <a href="create-cargo.html" class="btn btn-outline-dark" style="padding:4px 12px; font-size:0.75rem;">+ New Cargo</a>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cargo ID</th>
+              <th>Cargo Name</th>
+              <th>Route</th>
+              <th>Weight</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="my-cargo-list">
+            <tr><td colspan="6" style="text-align:center; padding:20px;">Loading cargo...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Bookings Table -->
+    <div class="card">
+      <div class="card-title">
+        <span>RECENT BOOKINGS & SHIPMENTS</span>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking Code</th>
+              <th>Cargo</th>
+              <th>Route</th>
+              <th>Cost</th>
+              <th>Status</th>
+              <th>Tracking</th>
+            </tr>
+          </thead>
+          <tbody id="business-bookings-list">
+            <tr><td colspan="6" style="text-align:center; padding:20px;">Loading bookings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>&copy; 2026 India Shared Transport Network.</p>
+  </footer>
+
+  <script type="module">
+    import { BusinessModule } from '../js/business.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      BusinessModule.initDashboard();
+    });
+  </script>
+</body>
+</html>

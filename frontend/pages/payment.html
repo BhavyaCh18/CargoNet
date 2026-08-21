@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulated Payment | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="business-dashboard.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">💳</div>
+        <div class="brand-text">
+          <span class="brand-title">SIMULATED PAYMENT</span>
+          <span class="brand-subtitle">SECURE ESCROW CHECKOUT</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container" style="max-width:540px;">
+    <div class="card">
+      <h2 class="card-title">PAYMENT CHECKOUT</h2>
+      
+      <div id="payment-summary" style="margin-bottom:24px;">
+        <p style="color:#64748B;">Loading payment details...</p>
+      </div>
+
+      <form id="payment-form">
+        <div class="form-group">
+          <label class="form-label">PAYMENT METHOD</label>
+          <select id="paymentMethod" class="form-control">
+            <option value="SIMULATED_CARD">💳 Credit / Debit Card (Simulated)</option>
+            <option value="UPI">📱 UPI Instant Transfer (Simulated)</option>
+            <option value="NET_BANKING">🏦 Net Banking (Simulated)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-solid-dark btn-block" style="background:#15803D; border-color:#15803D;">
+          COMPLETE SIMULATED PAYMENT ✅
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script type="module">
+    import { API } from '../js/api.js';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingId = urlParams.get('bookingId');
+
+    async function loadPaymentDetails() {
+      if (!bookingId) return;
+      try {
+        const booking = await API.get(`/bookings/${bookingId}`);
+        document.getElementById('payment-summary').innerHTML = `
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:16px;">
+            <div style="font-size:0.8rem; font-weight:700; color:#64748B; text-transform:uppercase;">BOOKING CODE</div>
+            <div style="font-size:1.3rem; font-weight:800; color:#0B1220; margin-bottom:12px;">${booking.bookingCode}</div>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;">
+              <span>Transport Cost:</span>
+              <strong>₹${booking.transportCost?.toLocaleString('en-IN')}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;">
+              <span>Platform Fee (5%):</span>
+              <strong>₹${booking.platformFee?.toLocaleString('en-IN')}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top:2px dashed #0B1220; padding-top:8px; font-size:1.1rem;">
+              <strong>Total Amount:</strong>
+              <strong style="color:#0B1220;">₹${booking.totalCost?.toLocaleString('en-IN')}</strong>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        alert("Error loading booking: " + err.message);
+      }
+    }
+
+    document.getElementById('payment-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await API.post('/payments', {
+          bookingId: parseInt(bookingId),
+          paymentMethod: document.getElementById('paymentMethod').value
+        });
+        alert(`Payment Successful! Transaction ID: ${res.transactionId}`);
+        window.location.href = `business-bookings.html`;
+      } catch (err) {
+        alert("Payment failed: " + err.message);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadPaymentDetails);
+  </script>
+</body>
+</html>

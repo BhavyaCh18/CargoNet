@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Bookings | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="business-dashboard.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">📋</div>
+        <div class="brand-text">
+          <span class="brand-title">MY BOOKINGS</span>
+          <span class="brand-subtitle">BUSINESS SHIPMENT HISTORY</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container">
+    <div class="card">
+      <div class="card-title">
+        <span>BUSINESS BOOKINGS & STATUS</span>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking Code</th>
+              <th>Cargo</th>
+              <th>Route</th>
+              <th>Total Cost</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="business-bookings-list">
+            <tr><td colspan="6" style="text-align:center; padding:20px;">Loading bookings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { BusinessModule } from '../js/business.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      BusinessModule.loadMyBookings();
+    });
+  </script>
+</body>
+</html>

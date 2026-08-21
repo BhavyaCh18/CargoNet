@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Return Loads | India Shared Transport Network</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-container">
+      <a href="truck-owner-dashboard.html" style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-icon-badge">🔄</div>
+        <div class="brand-text">
+          <span class="brand-title">RETURN LOADS</span>
+          <span class="brand-subtitle">ZERO-EMPTY-MILES OPPORTUNITIES</span>
+        </div>
+      </a>
+    </div>
+    <div class="header-nav" id="header-nav-actions"></div>
+  </header>
+
+  <main class="main-container">
+    <div id="return-loads-container">
+      <div class="card"><p style="color:#64748B;">Searching real MySQL database for return load cargo matching your empty-return truck...</p></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { ReturnLoadsModule } from '../js/return-loads.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      ReturnLoadsModule.init();
+    });
+  </script>
+</body>
+</html>
