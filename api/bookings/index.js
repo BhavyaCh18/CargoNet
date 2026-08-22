@@ -1,7 +1,7 @@
 const pool = require("../../lib/db");
 const jwt = require("jsonwebtoken");
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     try {
         const authHeader = req.headers.authorization;
 
@@ -168,4 +168,4 @@ module.exports = async (req, res) => {
             error: error.message
         });
     }
-};
+}
