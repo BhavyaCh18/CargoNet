@@ -1,6 +1,14 @@
 {
     "rewrites": [
         {
+            "source": "/api/matching/cargo/:cargoId",
+            "destination": "/api/matching/cargo/[cargoId]"
+        },
+        {
+            "source": "/api/(.*)",
+            "destination": "/api/$1"
+        },
+        {
             "source": "/",
             "destination": "/frontend/index.html"
         },
