@@ -1,7 +1,7 @@
 const pool = require("../../lib/db");
 const jwt = require("jsonwebtoken");
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
 
@@ -36,11 +36,11 @@ export default async function handler(req, res) {
             // Get cargo
             const cargoResult = await pool.query(
                 `
-        SELECT *
-        FROM cargo
-        WHERE id = $1
-        AND business_id = $2
-        `,
+                SELECT *
+                FROM cargo
+                WHERE id = $1
+                AND business_id = $2
+                `,
                 [cargoId, userId]
             );
 
@@ -55,10 +55,10 @@ export default async function handler(req, res) {
             // Get truck
             const truckResult = await pool.query(
                 `
-        SELECT *
-        FROM trucks
-        WHERE id = $1
-        `,
+                SELECT *
+                FROM trucks
+                WHERE id = $1
+                `,
                 [truckId]
             );
 
@@ -89,33 +89,31 @@ export default async function handler(req, res) {
             // Create booking
             const bookingResult = await pool.query(
                 `
-        INSERT INTO bookings (
-          booking_code,
-          cargo_id,
-          truck_id,
-          business_id,
-          transporter_id,
-          weight,
-          pickup_location,
-          destination,
-          transport_cost,
-          status,
-          created_at
-        )
-        VALUES (
-          $1, $2, $3, $4, $5,
-          $6, $7, $8, $9,
-          'BOOKED',
-          NOW()
-        )
-        RETURNING *
-        `,
+                INSERT INTO bookings (
+                    booking_code,
+                    cargo_id,
+                    truck_id,
+                    business_id,
+                    weight,
+                    pickup_location,
+                    destination,
+                    transport_cost,
+                    status,
+                    created_at
+                )
+                VALUES (
+                    $1, $2, $3, $4,
+                    $5, $6, $7, $8,
+                    'BOOKED',
+                    NOW()
+                )
+                RETURNING *
+                `,
                 [
                     bookingCode,
                     cargoId,
                     truckId,
                     userId,
-                    truck.owner_id,
                     cargo.weight,
                     cargo.pickup_location,
                     cargo.destination,
@@ -126,11 +124,11 @@ export default async function handler(req, res) {
             // Reduce available truck capacity
             await pool.query(
                 `
-        UPDATE trucks
-        SET available_capacity =
-          available_capacity - $1
-        WHERE id = $2
-        `,
+                UPDATE trucks
+                SET available_capacity =
+                    available_capacity - $1
+                WHERE id = $2
+                `,
                 [
                     cargo.weight,
                     truckId
@@ -140,10 +138,10 @@ export default async function handler(req, res) {
             // Update truck status
             await pool.query(
                 `
-        UPDATE trucks
-        SET status = 'BOOKED'
-        WHERE id = $1
-        `,
+                UPDATE trucks
+                SET status = 'BOOKED'
+                WHERE id = $1
+                `,
                 [truckId]
             );
 
@@ -168,4 +166,4 @@ export default async function handler(req, res) {
             error: error.message
         });
     }
-}
+};
