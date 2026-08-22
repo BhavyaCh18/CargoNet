@@ -5,7 +5,7 @@
             "destination": "/frontend/index.html"
         },
         {
-            "source": "/(.*)",
+            "source": "/((?!api/).*)",
             "destination": "/frontend/$1"
         }
     ]
