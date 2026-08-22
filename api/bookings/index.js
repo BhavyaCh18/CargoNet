@@ -86,6 +86,10 @@ module.exports = async (req, res) => {
             const transportCost =
                 Number(cargo.weight) * 1500;
 
+            // Platform fee
+            const platformFee =
+                transportCost * 0.05;
+
             // Create booking
             const bookingResult = await pool.query(
                 `
@@ -98,12 +102,14 @@ module.exports = async (req, res) => {
                     pickup_location,
                     destination,
                     transport_cost,
+                    platform_fee,
                     status,
                     created_at
                 )
                 VALUES (
                     $1, $2, $3, $4,
                     $5, $6, $7, $8,
+                    $9,
                     'BOOKED',
                     NOW()
                 )
@@ -117,7 +123,8 @@ module.exports = async (req, res) => {
                     cargo.weight,
                     cargo.pickup_location,
                     cargo.destination,
-                    transportCost
+                    transportCost,
+                    platformFee
                 ]
             );
 
