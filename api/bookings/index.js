@@ -178,6 +178,18 @@ module.exports = async (req, res) => {
                 [truckId]
             );
 
+            // =========================
+            // UPDATE CARGO STATUS
+            // =========================
+            await pool.query(
+                `
+                UPDATE cargo
+                SET status = 'BOOKED'
+                WHERE id = $1
+                `,
+                [cargoId]
+            );
+
             const booking = bookingResult.rows[0];
 
             return res.status(201).json({

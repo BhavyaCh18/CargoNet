@@ -1,4 +1,4 @@
-# India Shared Transport Network (Empty-Return Truck Matching Platform)
+# CargoNet (India Shared Transport Network — Empty-Return Truck Matching Platform)
 
 > **One-Line Pitch:** A platform matching businesses needing to ship cargo with trucks already on the road (especially trucks making empty return trips), reducing empty-truck mileage, lowering freight costs, and increasing transporter revenue.
 
@@ -6,22 +6,21 @@
 
 ## 1. Core Feature Highlights
 
-- **Signature Return-Load Matching Engine (`MatchingEngine.java`):**
-  - Priority scoring boost (**+30 points**) for anticipated empty-return legs (`is_empty_return = true`).
+- **Signature Return-Load Matching Engine:**
+  - Priority matching for anticipated empty-return legs (`is_return_load = true`).
   - Discounted pricing estimation reflecting lower marginal return leg cost for transporters.
-  - Inter-city corridor matching (Hyderabad, Bengaluru, Chennai, Mumbai, Pune).
-- **Transporter Empty-Leg KPI:** Tracks empty-leg utilization rate and wasted mileage converted into active revenue.
-- **Real-Time GPS Tracking Map:** Native WebSocket stream (`/ws/tracking/{bookingId}`) with Leaflet.js / OpenStreetMap visual tracking.
-- **Proof of Delivery & OTP Verification:** 6-digit OTP verification protocol upon delivery.
-- **Strict Black & White Enterprise Theme:** Sleek dark navy (`#0B1220`) visual aesthetic with crisp typography and warm accent callouts.
+  - Inter-city corridor matching (Hyderabad, Bengaluru, Chennai, Mumbai, Pune, Delhi, Jaipur, etc.).
+- **Transporter Empty-Leg KPI & Notifications:** Automatically sets trucks to `RETURN_AVAILABLE` upon cargo delivery and alerts truck owners of available return cargo.
+- **Shipment Tracking Map:** Interactive OpenStreetMap / Leaflet.js visualization with dynamic route rendering between origin pickup, current location, and destination.
+- **Strict Enterprise Theme:** Sleek dark navy (`#0B1220`) visual aesthetic with crisp typography and responsive dashboard views.
 
 ---
 
 ## 2. Tech Stack
 
-- **Backend:** Plain Java 17+ with **Javalin 6.x** (Zero Spring Boot). Hand-rolled JWT auth (`java-jwt`), BCrypt, direct JDBC / HikariCP connection pool, and `dotenv-java` configuration loader.
-- **Frontend:** Plain HTML, CSS, Vanilla JavaScript ES Modules (`<script type="module">`). Zero React, zero TypeScript, zero bundlers/Vite. `frontend/index.html` lives at root of `/frontend`.
-- **Database:** PostgreSQL (Supabase compatible). DDL and Seed scripts in `database/schema.sql` and `database/seed.sql`.
+- **Backend:** Node.js CommonJS serverless functions (`api/`) deployed natively on **Vercel**. Direct PostgreSQL connection pool via `pg` (`lib/db.js`), hand-rolled JWT authentication (`jsonwebtoken`), and BCrypt password verification (`bcryptjs`).
+- **Frontend:** HTML5, Vanilla CSS, Vanilla JavaScript ES Modules (`<script type="module">`). Zero React, zero TypeScript, zero bundlers.
+- **Database:** PostgreSQL (Supabase compatible). DDL schema in `database/schema.sql`.
 - **Maps:** Leaflet.js / OpenStreetMap via CDN.
 
 ---
@@ -30,64 +29,56 @@
 
 ```
 CargoNet/
-├── backend/
-│   ├── pom.xml
-│   ├── .env.example
-│   ├── .env
-│   ├── src/
-│   │   ├── main/java/com/cargonet/
-│   │   │   ├── Main.java                        # Javalin server startup & routing
-│   │   │   ├── config/DatabaseConfig.java       # HikariCP connection pool & dotenv
-│   │   │   ├── auth/                            # JWT & Auth Middleware
-│   │   │   ├── model/                           # Domain POJOs
-│   │   │   ├── repository/                      # JDBC SQL repositories
-│   │   │   ├── service/MatchingEngine.java      # Return-Load matching engine
-│   │   │   ├── controller/                      # Javalin REST controllers
-│   │   │   └── websocket/                       # GPS tracking WebSocket handler
-│   │   └── test/java/com/cargonet/service/
-│   │       └── MatchingEngineTest.java          # JUnit unit test
+├── api/                                  # Vercel Node.js Serverless Functions (CommonJS)
+│   ├── auth/                             # Login, register, session verification
+│   ├── admin/                            # Platform statistics, user management, fleet & cargo monitoring
+│   ├── bookings/                         # Booking creation, details, history, trip status advancing, return loads
+│   ├── complaints/                       # Dispute logging and admin resolution
+│   ├── matching/                         # Outbound and Return-Load matching engines
+│   ├── notifications/                    # Transporter and business notifications
+│   ├── payments/                         # Payment processing
+│   ├── tracking/                         # Shipment tracking REST API
+│   ├── cargo.js                          # Cargo postings API
+│   ├── trucks.js                         # Fleet management API
+│   └── health.js                         # Serverless health check
 ├── database/
-│   ├── schema.sql                               # PostgreSQL DDL
-│   └── seed.sql                                 # Corridor seed data
+│   ├── schema.sql                        # PostgreSQL DDL
+│   └── seed.sql                          # Database seed data
 ├── frontend/
-│   ├── index.html                               # Master Landing Page
-│   ├── css/style.css                            # B&W / Dark Navy design system
-│   ├── js/                                      # ES Modules (config, api, auth)
-│   ├── pages/                                   # Plain HTML pages (dashboards, forms, map)
-│   └── assets/
-└── README.md
+│   ├── index.html                        # Master Landing Page
+│   ├── css/style.css                     # Design system styles
+│   ├── js/                               # Frontend ES Modules (API client, Auth, Business, TruckOwner, Admin)
+│   └── pages/                            # HTML pages (dashboards, tracking, forms)
+├── lib/
+│   └── db.js                             # PostgreSQL database pool (`pg`)
+├── .env.example                          # Environment variable template
+├── vercel.json                           # Vercel routing and rewrite configuration
+│
+└── [ARCHIVED / REFERENCE ONLY]
+    ├── backend/                          # Legacy Java backend (Archived / Reference Only)
+    └── scratch/                          # Ad-hoc development debug scripts (Archived / Internal)
 ```
 
 ---
 
 ## 4. How to Run Locally
 
-### Backend Setup
-1. Navigate to `backend/`:
+### Environment Setup
+1. Copy `.env.example` to `.env`:
    ```bash
-   cd backend
+   cp .env.example .env
    ```
-2. Verify `.env` file settings (connects directly to Supabase Postgres via `SUPABASE_DB_URL`).
-3. Run tests and start the Javalin server:
-   ```bash
-   mvn test
-   mvn exec:java -Dexec.mainClass="com.cargonet.Main"
-   ```
+2. Configure `SUPABASE_DB_URL` and `JWT_SECRET` in `.env`.
 
-### Frontend Setup
-1. Open `frontend/index.html` directly in any browser, or serve static folder:
-   ```bash
-   npx serve frontend
-   ```
-2. Demo Accounts (Password: `password123`):
-   - **Business Shipper:** `shipping@apexpharma.com`
-   - **Truck Transporter:** `venkatesh@transporter.com`
-   - **Platform Admin:** `admin@cargonet.in`
+### Local Server Execution
+Use Node.js or `vercel dev` to run the serverless functions and frontend:
+```bash
+npx vercel dev
+```
 
 ---
 
 ## 5. Deployment Guide
 
-- **Frontend (GitHub Pages):** Go to GitHub Repo Settings -> Pages -> Source: select `/frontend` folder on `main` branch. Ships as static HTML/CSS/JS with zero build step.
-- **Backend (Render / Railway / Fly.io):** Deploy Java application using Maven package. Configure Environment Variables (`JDBC_URL`, `JWT_SECRET`, `CORS_ORIGINS`).
-- **Database (Supabase):** Execute `database/schema.sql` and `database/seed.sql` in Supabase SQL Editor.
+- **Vercel:** Connect GitHub repository to Vercel. Set `SUPABASE_DB_URL` and `JWT_SECRET` in Vercel Environment Variables. Deployment happens automatically on git push.
+- **Database:** Execute `database/schema.sql` in Supabase SQL Editor.

@@ -80,7 +80,7 @@ export const TruckOwnerModule = {
   },
 
   renderStatusActionButtons(b) {
-    if (b.status === 'CONFIRMED' || b.status === 'BOOKED' || b.status === 'RETURN_BOOKED') {
+    if (b.status === 'CONFIRMED' || b.status === 'BOOKED' || b.status === 'RETURN_BOOKED' || b.status === 'PAID') {
       return `<button onclick="TruckOwnerModule.advanceBookingStatus(${b.id}, 'CARGO_PICKED_UP')" class="btn btn-solid-dark" style="padding:4px 8px; font-size:0.75rem;">Cargo Picked Up 📦</button>`;
     }
     if (b.status === 'CARGO_PICKED_UP') {
