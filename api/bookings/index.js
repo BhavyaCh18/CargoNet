@@ -25,6 +25,7 @@ module.exports = async (req, res) => {
         // POST /api/bookings
         // =========================
         if (req.method === "POST") {
+
             const { cargoId, truckId } = req.body;
 
             if (!cargoId || !truckId) {
@@ -33,7 +34,9 @@ module.exports = async (req, res) => {
                 });
             }
 
-            // Get cargo
+            // =========================
+            // GET CARGO
+            // =========================
             const cargoResult = await pool.query(
                 `
                 SELECT *
@@ -52,7 +55,9 @@ module.exports = async (req, res) => {
 
             const cargo = cargoResult.rows[0];
 
-            // Get truck
+            // =========================
+            // GET TRUCK
+            // =========================
             const truckResult = await pool.query(
                 `
                 SELECT *
@@ -70,65 +75,84 @@ module.exports = async (req, res) => {
 
             const truck = truckResult.rows[0];
 
-            // Check capacity
-            if (Number(truck.available_capacity) < Number(cargo.weight)) {
+            // =========================
+            // CHECK CAPACITY
+            // =========================
+            if (
+                Number(truck.available_capacity) <
+                Number(cargo.weight)
+            ) {
                 return res.status(400).json({
                     error: "Truck does not have enough available capacity"
                 });
             }
 
-            // Generate booking code
+            // =========================
+            // GENERATE BOOKING CODE
+            // =========================
             const bookingCode =
                 "BK" +
                 Date.now().toString().slice(-8) +
                 Math.floor(Math.random() * 1000);
 
+            // =========================
+            // CALCULATE COSTS
+            // =========================
             const transportCost =
                 Number(cargo.weight) * 1500;
 
-            // Platform fee
             const platformFee =
                 transportCost * 0.05;
 
-            // Create booking
+            const totalCost =
+                transportCost + platformFee;
+
+            // =========================
+            // CREATE BOOKING
+            // Matches your actual
+            // bookings table columns
+            // =========================
             const bookingResult = await pool.query(
                 `
                 INSERT INTO bookings (
                     booking_code,
-                    cargo_id,
-                    truck_id,
                     business_id,
-                    weight,
+                    truck_id,
+                    cargo_id,
                     pickup_location,
                     destination,
+                    weight,
                     transport_cost,
                     platform_fee,
+                    total_cost,
                     status,
-                    created_at
+                    is_return_load
                 )
                 VALUES (
-                    $1, $2, $3, $4,
-                    $5, $6, $7, $8,
-                    $9,
-                    'BOOKED',
-                    NOW()
+                    $1, $2, $3, $4, $5, $6,
+                    $7, $8, $9, $10,
+                    'CONFIRMED',
+                    false
                 )
                 RETURNING *
                 `,
                 [
                     bookingCode,
-                    cargoId,
-                    truckId,
                     userId,
-                    cargo.weight,
+                    truckId,
+                    cargoId,
                     cargo.pickup_location,
                     cargo.destination,
+                    cargo.weight,
                     transportCost,
-                    platformFee
+                    platformFee,
+                    totalCost
                 ]
             );
 
-            // Reduce available truck capacity
+            // =========================
+            // REDUCE TRUCK CAPACITY
+            // =========================
             await pool.query(
                 `
                 UPDATE trucks
@@ -142,7 +166,9 @@ module.exports = async (req, res) => {
                 ]
             );
 
-            // Update truck status
+            // =========================
+            // UPDATE TRUCK STATUS
+            // =========================
             await pool.query(
                 `
                 UPDATE trucks
@@ -158,7 +184,9 @@ module.exports = async (req, res) => {
                 id: booking.id,
                 bookingCode: booking.booking_code,
                 status: booking.status,
-                transportCost: booking.transport_cost
+                transportCost: booking.transport_cost,
+                platformFee: booking.platform_fee,
+                totalCost: booking.total_cost
             });
         }
 
@@ -167,7 +195,11 @@ module.exports = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Booking API error:", error);
+
+        console.error(
+            "Booking API error:",
+            error
+        );
 
         return res.status(500).json({
             error: error.message
