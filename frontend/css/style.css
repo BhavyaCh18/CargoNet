@@ -295,6 +295,60 @@ a {
 }
 
 /* ==========================================================================
+   SUB NAVIGATION TABS (UNIFIED CARGONET LOGISTICS TAB SYSTEM)
+   ========================================================================== */
+.sub-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 24px;
+  padding-bottom: 2px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sub-nav-tabs::-webkit-scrollbar {
+  height: 3px;
+}
+
+.sub-nav-tabs::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.sub-nav-tabs a {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: 8px 4px 12px 4px;
+  position: relative;
+  transition: color 0.15s ease-in-out;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.sub-nav-tabs a:hover {
+  color: var(--color-dark-navy);
+}
+
+.sub-nav-tabs a.active, .sub-nav-tabs a[data-active="true"] {
+  color: var(--color-dark-navy);
+  font-weight: 800;
+}
+
+.sub-nav-tabs a.active::after, .sub-nav-tabs a[data-active="true"]::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-dark-navy);
+  border-radius: 3px 3px 0 0;
+}
+
+/* ==========================================================================
    HERO & LANDING PAGE SECTION
    ========================================================================== */
 .hero-section {
