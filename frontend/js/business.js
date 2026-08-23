@@ -58,8 +58,7 @@ export const BusinessModule = {
           <td>
             <a
               href="matching.html?cargoId=${c.id}"
-              class="btn btn-solid-dark"
-              style="padding:4px 10px; font-size:0.75rem;"
+              class="btn btn-sm btn-solid-dark"
             >
               Find Trucks →
             </a>
@@ -136,8 +135,7 @@ export const BusinessModule = {
           <td>
             <a
               href="tracking.html?bookingId=${b.id}"
-              class="btn btn-outline-dark"
-              style="padding:4px 10px; font-size:0.75rem;"
+              class="btn btn-sm btn-outline-dark"
             >
               Track 📍
             </a>

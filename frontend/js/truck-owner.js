@@ -36,8 +36,8 @@ export const TruckOwnerModule = {
             <td>${t.availableCapacity} / ${t.maxCapacity} Tons</td>
             <td>${statusBadge}</td>
             <td>
-              ${t.status === 'RETURN_AVAILABLE' ? `<a href="return-loads.html?truckId=${t.id}" class="btn btn-solid-dark" style="padding:4px 10px; font-size:0.75rem; background-color:#F97316; border-color:#F97316;">View Return Cargo 🔥</a>` : ''}
-              <button onclick="TruckOwnerModule.updateTruckStatus(${t.id}, 'AVAILABLE')" class="btn btn-outline-dark" style="padding:4px 8px; font-size:0.75rem;">Make Available</button>
+              ${t.status === 'RETURN_AVAILABLE' ? `<a href="return-loads.html?truckId=${t.id}" class="btn btn-sm btn-primary-orange">View Return Cargo 🔥</a>` : ''}
+              <button onclick="TruckOwnerModule.updateTruckStatus(${t.id}, 'AVAILABLE')" class="btn btn-sm btn-outline-dark">Make Available</button>
             </td>
           </tr>
         `;
@@ -81,13 +81,13 @@ export const TruckOwnerModule = {
 
   renderStatusActionButtons(b) {
     if (b.status === 'CONFIRMED' || b.status === 'BOOKED' || b.status === 'RETURN_BOOKED' || b.status === 'PAID') {
-      return `<button onclick="TruckOwnerModule.advanceBookingStatus(${b.id}, 'CARGO_PICKED_UP')" class="btn btn-solid-dark" style="padding:4px 8px; font-size:0.75rem;">Cargo Picked Up 📦</button>`;
+      return `<button onclick="TruckOwnerModule.advanceBookingStatus(${b.id}, 'CARGO_PICKED_UP')" class="btn btn-sm btn-solid-dark">Cargo Picked Up 📦</button>`;
     }
     if (b.status === 'CARGO_PICKED_UP') {
-      return `<button onclick="TruckOwnerModule.advanceBookingStatus(${b.id}, 'IN_TRANSIT')" class="btn btn-solid-dark" style="padding:4px 8px; font-size:0.75rem;">In Transit 🚛</button>`;
+      return `<button onclick="TruckOwnerModule.advanceBookingStatus(${b.id}, 'IN_TRANSIT')" class="btn btn-sm btn-solid-dark">In Transit 🚛</button>`;
     }
     if (b.status === 'IN_TRANSIT') {
-      return `<button onclick="TruckOwnerModule.advanceBookingStatus(${b.id}, 'DELIVERED')" class="btn btn-solid-dark" style="padding:4px 8px; font-size:0.75rem; background-color:#15803D; border-color:#15803D;">Complete Delivery ✅</button>`;
+      return `<button onclick="TruckOwnerModule.advanceBookingStatus(${b.id}, 'DELIVERED')" class="btn btn-sm btn-success">Complete Delivery ✅</button>`;
     }
     return `<span style="font-size:0.75rem; color:#15803D; font-weight:700;">Completed</span>`;
   },
@@ -127,7 +127,7 @@ export const TruckOwnerModule = {
             <div>
               <strong>${n.title}</strong> — ${n.message}
             </div>
-            <button onclick="TruckOwnerModule.dismissNotification(${n.id})" class="btn btn-outline-dark" style="padding:2px 8px; font-size:0.7rem;">Dismiss</button>
+            <button onclick="TruckOwnerModule.dismissNotification(${n.id})" class="btn btn-xs btn-outline-dark">Dismiss</button>
           </div>
         `).join('');
       } else {

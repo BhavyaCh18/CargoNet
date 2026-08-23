@@ -40,7 +40,7 @@ export const AdminModule = {
             <span class="pill-badge" style="margin:0; ${u.status === 'BLOCKED' ? 'background:#FEE2E2; color:#991B1B; border-color:#EF4444;' : ''}">${u.status}</span>
           </td>
           <td>
-            <button onclick="AdminModule.toggleBlockUser(${u.id})" class="btn btn-outline-dark" style="padding:4px 10px; font-size:0.75rem;">
+            <button onclick="AdminModule.toggleBlockUser(${u.id})" class="btn btn-sm ${u.status === 'BLOCKED' ? 'btn-outline-dark' : 'btn-outline-danger'}">
               ${u.status === 'BLOCKED' ? 'Unblock Account' : 'Block User 🚫'}
             </button>
           </td>
@@ -151,7 +151,7 @@ export const AdminModule = {
           <td>${c.description}</td>
           <td><span class="pill-badge" style="margin:0;">${c.status}</span></td>
           <td>
-            ${c.status === 'PENDING' ? `<button onclick="AdminModule.resolveComplaint(${c.id})" class="btn btn-solid-dark" style="padding:4px 10px; font-size:0.75rem;">Resolve</button>` : '<span style="color:#15803D; font-weight:700;">Resolved</span>'}
+            ${c.status === 'PENDING' ? `<button onclick="AdminModule.resolveComplaint(${c.id})" class="btn btn-sm btn-success">Resolve</button>` : '<span style="color:#15803D; font-weight:700;">Resolved</span>'}
           </td>
         </tr>
       `).join('');

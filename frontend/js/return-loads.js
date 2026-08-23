@@ -92,7 +92,7 @@ export const ReturnLoadsModule = {
             </div>
 
             <div style="display:flex; justify-content:flex-end;">
-              <button onclick="ReturnLoadsModule.acceptReturnCargo(${selectedTruck.id}, ${c.id})" class="btn btn-solid-dark" style="background-color:#F97316; border-color:#F97316;">
+              <button onclick="ReturnLoadsModule.acceptReturnCargo(${selectedTruck.id}, ${c.id})" class="btn btn-md btn-primary-orange">
                 ACCEPT RETURN CARGO 🚚
               </button>
             </div>
