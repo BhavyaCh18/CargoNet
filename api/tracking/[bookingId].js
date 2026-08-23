@@ -34,8 +34,8 @@ module.exports = async (req, res) => {
     const userRole = (decoded.role || "").toUpperCase();
 
     // Extract booking ID
-    const { bookingId } = req.query;
-    const id = Number(bookingId);
+    const bookingIdParam = req.query.bookingId || req.query.id || req.query[0];
+    const id = Number(bookingIdParam);
 
     if (!id || isNaN(id)) {
       return res.status(400).json({

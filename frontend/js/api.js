@@ -48,7 +48,19 @@ export const API = {
         }
       }
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      let data;
+
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        if (!response.ok) {
+          throw new Error(`API returned HTTP ${response.status} for ${endpoint}: ${text.substring(0, 150)}`);
+        }
+        throw new Error(`API returned non-JSON response (${contentType}) for ${endpoint}`);
+      }
+
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
       }
