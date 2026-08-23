@@ -48,59 +48,46 @@ function createReqRes(method, path, body = {}, headers = {}, query = {}) {
 
 async function runEndToEndAudit() {
   console.log("=================================================");
-  console.log("CARGONET PLATFORM FULL END-TO-END INTEGRATION AUDIT");
+  console.log("CARGONET PLATFORM CONSOLIDATED INTEGRATION AUDIT");
   console.log("=================================================\n");
 
-  const registerHandler = require("../api/auth/register");
-  const loginHandler = require("../api/auth/login");
+  const authHandler = require("../api/auth");
   const cargoHandler = require("../api/cargo");
   const trucksHandler = require("../api/trucks");
-  const matchOutboundHandler = require("../api/matching/cargo/[cargoId]");
-  const bookingsHandler = require("../api/bookings/index");
-  const paymentHandler = require("../api/payments/index");
-  const trackingHandler = require("../api/tracking/[bookingId]");
-  const bookingStatusHandler = require("../api/bookings/[id]/status");
-  const returnMatchHandler = require("../api/matching/return-load/[truckId]");
-  const returnBookingHandler = require("../api/bookings/return-load");
-  const notificationsHandler = require("../api/notifications/index");
-  const adminStatsHandler = require("../api/admin/statistics");
-  const adminUsersHandler = require("../api/admin/users/index");
-  const adminToggleBlockHandler = require("../api/admin/users/[userId]/toggle-block");
-  const adminTrucksHandler = require("../api/admin/trucks");
-  const adminCargoHandler = require("../api/admin/cargo");
-  const adminBookingsHandler = require("../api/admin/bookings");
-  const complaintsHandler = require("../api/complaints/index");
-  const resolveComplaintHandler = require("../api/complaints/[id]/resolve");
+  const matchingHandler = require("../api/matching");
+  const bookingsHandler = require("../api/bookings");
+  const paymentsHandler = require("../api/payments");
+  const trackingHandler = require("../api/tracking");
+  const notificationsHandler = require("../api/notifications");
+  const adminHandler = require("../api/admin");
+  const complaintsHandler = require("../api/complaints");
 
   // 1. FLOW 1: AUTHENTICATION
   console.log("--- FLOW 1: AUTHENTICATION ---");
   const bizEmail = `test_biz_${Date.now()}@cargonet.in`;
   const truckEmail = `test_transporter_${Date.now()}@cargonet.in`;
 
-  // Register Business User
   let { req, res } = createReqRes("POST", "/api/auth/register", {
     name: "Audit Business",
     email: bizEmail,
     password: "password123",
     role: "BUSINESS"
   });
-  await registerHandler(req, res);
+  await authHandler(req, res);
   console.log(`[PASS] Register Business: HTTP ${res.statusCode}`);
   const bizToken = res.body.token;
 
-  // Register Truck Owner User
   ({ req, res } = createReqRes("POST", "/api/auth/register", {
     name: "Audit Transporter",
     email: truckEmail,
     password: "password123",
     role: "TRUCK_OWNER"
   }));
-  await registerHandler(req, res);
+  await authHandler(req, res);
   console.log(`[PASS] Register Transporter: HTTP ${res.statusCode}`);
   const truckOwnerToken = res.body.token;
-  const truckOwnerId = res.body.user.id;
 
-  // 2. FLOW 2: BUSINESS POSTS CARGO & TRUCK OWNER REGISTERS TRUCK
+  // 2. FLOW 2: CARGO & TRUCK REGISTRATION
   console.log("\n--- FLOW 2: CARGO & TRUCK REGISTRATION ---");
   ({ req, res } = createReqRes("POST", "/api/cargo", {
     cargoName: "Machinery Parts",
@@ -131,8 +118,8 @@ async function runEndToEndAudit() {
 
   // 3. FLOW 3: MATCHING, BOOKING & PAYMENT
   console.log("\n--- FLOW 3: OUTBOUND MATCHING, BOOKING & PAYMENT ---");
-  ({ req, res } = createReqRes("GET", `/api/matching/cargo/${cargoId}`, {}, { authorization: `Bearer ${bizToken}` }, { cargoId: String(cargoId) }));
-  await matchOutboundHandler(req, res);
+  ({ req, res } = createReqRes("GET", `/api/matching/cargo/${cargoId}`, {}, { authorization: `Bearer ${bizToken}` }));
+  await matchingHandler(req, res);
   console.log(`[PASS] Outbound Match Cargo: HTTP ${res.statusCode}, Found Matches: ${res.body.matchingTrucks ? res.body.matchingTrucks.length : 0}`);
 
   ({ req, res } = createReqRes("POST", "/api/bookings", { cargoId, truckId }, { authorization: `Bearer ${bizToken}` }));
@@ -141,29 +128,27 @@ async function runEndToEndAudit() {
   const bookingId = res.body.id;
 
   ({ req, res } = createReqRes("POST", "/api/payments", { bookingId, paymentMethod: "UPI" }, { authorization: `Bearer ${bizToken}` }));
-  await paymentHandler(req, res);
-  console.log(`[PASS] Payment: HTTP ${res.statusCode}, Booking Status: ${res.body.status}`);
+  await paymentsHandler(req, res);
+  console.log(`[PASS] Payment: HTTP ${res.statusCode}, Payment Status: ${res.body.paymentStatus}`);
 
-  ({ req, res } = createReqRes("GET", `/api/tracking/${bookingId}`, {}, { authorization: `Bearer ${bizToken}` }, { bookingId: String(bookingId) }));
+  ({ req, res } = createReqRes("GET", `/api/tracking/${bookingId}`, {}, { authorization: `Bearer ${bizToken}` }));
   await trackingHandler(req, res);
   console.log(`[PASS] Shipment Tracking: HTTP ${res.statusCode}, Location: ${res.body.tracking ? res.body.tracking.currentLocation : 'N/A'}`);
 
   // 4. FLOW 4: TRIP ADVANCEMENT & RETURN LOAD LIFECYCLE
   console.log("\n--- FLOW 4: TRIP ADVANCEMENT & RETURN LOAD MATCHING ---");
-  ({ req, res } = createReqRes("PUT", `/api/bookings/${bookingId}/status`, { status: "CARGO_PICKED_UP" }, { authorization: `Bearer ${truckOwnerToken}` }, { id: String(bookingId) }));
-  await bookingStatusHandler(req, res);
+  ({ req, res } = createReqRes("PUT", `/api/bookings/${bookingId}/status`, { status: "CARGO_PICKED_UP" }, { authorization: `Bearer ${truckOwnerToken}` }));
+  await bookingsHandler(req, res);
   console.log(`[PASS] Trip Status -> CARGO_PICKED_UP: HTTP ${res.statusCode}`);
 
-  ({ req, res } = createReqRes("PUT", `/api/bookings/${bookingId}/status`, { status: "DELIVERED" }, { authorization: `Bearer ${truckOwnerToken}` }, { id: String(bookingId) }));
-  await bookingStatusHandler(req, res);
+  ({ req, res } = createReqRes("PUT", `/api/bookings/${bookingId}/status`, { status: "DELIVERED" }, { authorization: `Bearer ${truckOwnerToken}` }));
+  await bookingsHandler(req, res);
   console.log(`[PASS] Trip Status -> DELIVERED: HTTP ${res.statusCode}`);
 
-  // Check Truck Owner Notification
   ({ req, res } = createReqRes("GET", "/api/notifications", {}, { authorization: `Bearer ${truckOwnerToken}` }));
   await notificationsHandler(req, res);
   console.log(`[PASS] Notifications for Transporter: HTTP ${res.statusCode}, Count: ${res.body.length}`);
 
-  // Create Return Cargo from Bengaluru to Hyderabad
   ({ req, res } = createReqRes("POST", "/api/cargo", {
     cargoName: "Cotton Textiles",
     pickupLocation: "Bengaluru",
@@ -177,26 +162,24 @@ async function runEndToEndAudit() {
   const returnCargoId = res.body.id;
   console.log(`[PASS] Create Return Cargo: HTTP ${res.statusCode}, Cargo ID: ${returnCargoId}`);
 
-  // Match Return Cargo for Truck
-  ({ req, res } = createReqRes("GET", `/api/matching/return-load/${truckId}`, {}, { authorization: `Bearer ${truckOwnerToken}` }, { truckId: String(truckId) }));
-  await returnMatchHandler(req, res);
+  ({ req, res } = createReqRes("GET", `/api/matching/return-load/${truckId}`, {}, { authorization: `Bearer ${truckOwnerToken}` }));
+  await matchingHandler(req, res);
   console.log(`[PASS] Return Load Match: HTTP ${res.statusCode}, Found Matches: ${res.body.matchingCargo ? res.body.matchingCargo.length : 0}`);
 
-  // Accept Return Cargo
   ({ req, res } = createReqRes("POST", "/api/bookings/return-load", { truckId, cargoId: returnCargoId }, { authorization: `Bearer ${truckOwnerToken}` }));
-  await returnBookingHandler(req, res);
+  await bookingsHandler(req, res);
   console.log(`[PASS] Accept Return Cargo Booking: HTTP ${res.statusCode}, Return Booking Code: ${res.body.bookingCode}`);
 
-  // 5. FLOW 5: ADMIN DASHBOARD & COMPLAINTS
+  // 5. FLOW 5: ADMIN DASHBOARD & DISPUTES
   console.log("\n--- FLOW 5: ADMIN DASHBOARD & DISPUTES ---");
   const adminToken = jwt.sign({ email: "admin@cargonet.in", role: "ADMIN", name: "Admin" }, JWT_SECRET, { subject: "1", expiresIn: "7d" });
 
   ({ req, res } = createReqRes("GET", "/api/admin/statistics", {}, { authorization: `Bearer ${adminToken}` }));
-  await adminStatsHandler(req, res);
+  await adminHandler(req, res);
   console.log(`[PASS] Admin Stats: HTTP ${res.statusCode}, Total Users: ${res.body.totalUsers}, Return Loads Matched: ${res.body.returnLoadsMatched}`);
 
   ({ req, res } = createReqRes("GET", "/api/admin/users", {}, { authorization: `Bearer ${adminToken}` }));
-  await adminUsersHandler(req, res);
+  await adminHandler(req, res);
   console.log(`[PASS] Admin Users List: HTTP ${res.statusCode}, Users Count: ${res.body.length}`);
 
   ({ req, res } = createReqRes("POST", "/api/complaints", { subject: "Delayed Pickup", description: "Truck was 1 hour late", bookingId }, { authorization: `Bearer ${bizToken}` }));
@@ -204,8 +187,8 @@ async function runEndToEndAudit() {
   const complaintId = res.body.id;
   console.log(`[PASS] File Complaint: HTTP ${res.statusCode}, Complaint ID: ${complaintId}`);
 
-  ({ req, res } = createReqRes("PUT", `/api/complaints/${complaintId}/resolve`, {}, { authorization: `Bearer ${adminToken}` }, { id: String(complaintId) }));
-  await resolveComplaintHandler(req, res);
+  ({ req, res } = createReqRes("PUT", `/api/complaints/${complaintId}/resolve`, {}, { authorization: `Bearer ${adminToken}` }));
+  await complaintsHandler(req, res);
   console.log(`[PASS] Admin Resolve Complaint: HTTP ${res.statusCode}, Status: ${res.body.status}`);
 
   console.log("\n=================================================");

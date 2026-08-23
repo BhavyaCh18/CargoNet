@@ -21,6 +21,42 @@
             "destination": "/frontend/assets/:path*"
         },
         {
+            "source": "/api/auth/:path*",
+            "destination": "/api/auth.js"
+        },
+        {
+            "source": "/api/admin/:path*",
+            "destination": "/api/admin.js"
+        },
+        {
+            "source": "/api/bookings/:path*",
+            "destination": "/api/bookings.js"
+        },
+        {
+            "source": "/api/trucks/:path*",
+            "destination": "/api/trucks.js"
+        },
+        {
+            "source": "/api/matching/:path*",
+            "destination": "/api/matching.js"
+        },
+        {
+            "source": "/api/tracking/:path*",
+            "destination": "/api/tracking.js"
+        },
+        {
+            "source": "/api/payments/:path*",
+            "destination": "/api/payments.js"
+        },
+        {
+            "source": "/api/complaints/:path*",
+            "destination": "/api/complaints.js"
+        },
+        {
+            "source": "/api/notifications/:path*",
+            "destination": "/api/notifications.js"
+        },
+        {
             "source": "/:path((?!api/).*)",
             "destination": "/frontend/:path*"
         }
