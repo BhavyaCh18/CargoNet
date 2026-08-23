@@ -19,6 +19,19 @@ export const BusinessModule = {
       // User ID is taken securely from the JWT on the backend
       const cargoList = await API.get('/cargo');
 
+      // Update Summary Metrics if present
+      if (document.getElementById('stat-biz-cargo')) {
+        document.getElementById('stat-biz-cargo').innerText = cargoList.length;
+      }
+      if (document.getElementById('stat-biz-active')) {
+        const activeCount = cargoList.filter(c => c.status === 'SEARCHING' || c.status === 'ACTIVE' || c.status === 'BOOKED' || c.status === 'IN_TRANSIT').length;
+        document.getElementById('stat-biz-active').innerText = activeCount;
+      }
+      if (document.getElementById('stat-biz-delivered')) {
+        const deliveredCount = cargoList.filter(c => c.status === 'DELIVERED').length;
+        document.getElementById('stat-biz-delivered').innerText = deliveredCount;
+      }
+
       if (cargoList.length === 0) {
         container.innerHTML = `
           <tr>
@@ -88,10 +101,16 @@ export const BusinessModule = {
     try {
       const bookings = await API.get('/bookings/my-bookings');
 
+      if (document.getElementById('stat-biz-spent')) {
+        const totalSpent = bookings.reduce((sum, b) => sum + (Number(b.totalCost) || Number(b.transportCost) || 0), 0);
+        document.getElementById('stat-biz-spent').innerText = `₹${totalSpent.toLocaleString('en-IN')}`;
+      }
+
       if (bookings.length === 0) {
+        const colSpan = document.getElementById('stat-biz-cargo') ? 4 : 6;
         container.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align:center; color:#64748B;">
+            <td colspan="${colSpan}" style="text-align:center; color:#64748B;">
               No active or past bookings.
             </td>
           </tr>
@@ -99,50 +118,34 @@ export const BusinessModule = {
         return;
       }
 
-      container.innerHTML = bookings.map(b => `
-        <tr>
+      const isDashboard = !!document.getElementById('stat-biz-cargo');
 
-          <td>
-            <strong>${b.bookingCode}</strong>
-          </td>
-
-          <td>
-            ${b.cargoName} (${b.weight} Tons)
-          </td>
-
-          <td>
-            ${b.pickupLocation} → ${b.destination}
-          </td>
-
-          <td>
-            ₹${b.totalCost?.toLocaleString('en-IN')}
-          </td>
-
-          <td>
-            <span
-              class="pill-badge"
-              style="margin:0; font-size:0.7rem;"
-            >
-              ${b.status}
-            </span>
-
-            ${b.isReturnLoad
-          ? '<span class="return-load-badge">RETURN LOAD</span>'
-          : ''
-        }
-          </td>
-
-          <td>
-            <a
-              href="tracking.html?bookingId=${b.id}"
-              class="btn btn-sm btn-outline-dark"
-            >
-              Track 📍
-            </a>
-          </td>
-
-        </tr>
-      `).join('');
+      if (isDashboard) {
+        container.innerHTML = bookings.map(b => `
+          <tr>
+            <td><strong>${b.bookingCode}</strong></td>
+            <td>${b.pickupLocation} → ${b.destination}</td>
+            <td><span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span></td>
+            <td><a href="tracking.html?bookingId=${b.id}" class="btn btn-sm btn-outline-dark">Track 📍</a></td>
+          </tr>
+        `).join('');
+      } else {
+        container.innerHTML = bookings.map(b => `
+          <tr>
+            <td><strong>${b.bookingCode}</strong></td>
+            <td>${b.cargoName} (${b.weight} Tons)</td>
+            <td>${b.pickupLocation} → ${b.destination}</td>
+            <td>₹${(b.totalCost || b.transportCost)?.toLocaleString('en-IN')}</td>
+            <td>
+              <span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span>
+              ${b.isReturnLoad ? '<span class="return-load-badge">RETURN LOAD</span>' : ''}
+            </td>
+            <td>
+              <a href="tracking.html?bookingId=${b.id}" class="btn btn-sm btn-outline-dark">Track 📍</a>
+            </td>
+          </tr>
+        `).join('');
+      }
 
     } catch (err) {
       console.error("Error loading bookings:", err);

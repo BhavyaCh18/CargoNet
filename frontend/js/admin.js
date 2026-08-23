@@ -8,18 +8,21 @@ export const AdminModule = {
     try {
       const stats = await API.get('/admin/statistics');
 
-      document.getElementById('stat-total-users').innerText = stats.totalUsers || 0;
-      document.getElementById('stat-businesses').innerText = stats.totalBusinesses || 0;
-      document.getElementById('stat-truck-owners').innerText = stats.totalTruckOwners || 0;
-      document.getElementById('stat-trucks').innerText = stats.totalTrucks || 0;
-      document.getElementById('stat-cargo').innerText = stats.totalCargo || 0;
-      document.getElementById('stat-active-bookings').innerText = stats.activeBookings || 0;
-      document.getElementById('stat-completed-deliveries').innerText = stats.completedDeliveries || 0;
-      document.getElementById('stat-return-matched').innerText = stats.returnLoadsMatched || 0;
-      document.getElementById('stat-empty-reduced').innerText = stats.estimatedEmptyTripsReduced || 0;
+      if (document.getElementById('stat-total-users')) document.getElementById('stat-total-users').innerText = stats.totalUsers || 0;
+      if (document.getElementById('stat-businesses')) document.getElementById('stat-businesses').innerText = stats.totalBusinesses || 0;
+      if (document.getElementById('stat-truck-owners')) document.getElementById('stat-truck-owners').innerText = stats.totalTruckOwners || 0;
+      if (document.getElementById('stat-trucks')) document.getElementById('stat-trucks').innerText = stats.totalTrucks || 0;
+      if (document.getElementById('stat-cargo')) document.getElementById('stat-cargo').innerText = stats.totalCargo || 0;
+      if (document.getElementById('stat-active-bookings')) document.getElementById('stat-active-bookings').innerText = stats.activeBookings || 0;
+      if (document.getElementById('stat-completed-deliveries')) document.getElementById('stat-completed-deliveries').innerText = stats.completedDeliveries || 0;
+      if (document.getElementById('stat-return-matched')) document.getElementById('stat-return-matched').innerText = stats.returnLoadsMatched || 0;
+      if (document.getElementById('stat-empty-reduced')) document.getElementById('stat-empty-reduced').innerText = stats.estimatedEmptyTripsReduced || 0;
     } catch (err) {
       console.error("Error loading admin stats:", err);
     }
+
+    this.loadUsers();
+    this.loadComplaints();
   },
 
   async loadUsers() {

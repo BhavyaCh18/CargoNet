@@ -16,6 +16,20 @@ export const TruckOwnerModule = {
 
     try {
       const trucks = await API.get(`/trucks?ownerId=${user.id}`);
+
+      if (document.getElementById('stat-truck-total')) {
+        document.getElementById('stat-truck-total').innerText = trucks.length;
+      }
+      if (document.getElementById('stat-truck-available')) {
+        document.getElementById('stat-truck-available').innerText = trucks.filter(t => t.status === 'AVAILABLE').length;
+      }
+      if (document.getElementById('stat-truck-active')) {
+        document.getElementById('stat-truck-active').innerText = trucks.filter(t => t.status === 'BOOKED' || t.status === 'IN_TRANSIT' || t.status === 'CARGO_PICKED_UP').length;
+      }
+      if (document.getElementById('stat-truck-return')) {
+        document.getElementById('stat-truck-return').innerText = trucks.filter(t => t.status === 'RETURN_AVAILABLE' || t.status === 'RETURN_BOOKED').length;
+      }
+
       if (trucks.length === 0) {
         container.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748B;">No trucks registered. Click "Register Truck" to add your fleet.</td></tr>`;
         return;
@@ -53,27 +67,41 @@ export const TruckOwnerModule = {
 
     try {
       const bookings = await API.get('/bookings/my-bookings');
+      const isDashboard = !!document.getElementById('stat-truck-total');
+
       if (bookings.length === 0) {
-        container.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748B;">No trip bookings currently.</td></tr>`;
+        const colSpan = isDashboard ? 4 : 7;
+        container.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; color:#64748B;">No trip bookings currently.</td></tr>`;
         return;
       }
 
-      container.innerHTML = bookings.map(b => `
-        <tr>
-          <td><strong>${b.bookingCode}</strong></td>
-          <td>${b.vehicleNumber}</td>
-          <td>${b.cargoName} (${b.weight} Tons)</td>
-          <td>${b.pickupLocation} → ${b.destination}</td>
-          <td>₹${b.transportCost?.toLocaleString('en-IN')}</td>
-          <td>
-            <span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span>
-            ${b.isReturnLoad ? '<span class="return-load-badge">RETURN LOAD</span>' : ''}
-          </td>
-          <td>
-            ${this.renderStatusActionButtons(b)}
-          </td>
-        </tr>
-      `).join('');
+      if (isDashboard) {
+        container.innerHTML = bookings.map(b => `
+          <tr>
+            <td><strong>${b.vehicleNumber}</strong></td>
+            <td>${b.pickupLocation} → ${b.destination}</td>
+            <td><span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span></td>
+            <td>${this.renderStatusActionButtons(b)}</td>
+          </tr>
+        `).join('');
+      } else {
+        container.innerHTML = bookings.map(b => `
+          <tr>
+            <td><strong>${b.bookingCode}</strong></td>
+            <td>${b.vehicleNumber}</td>
+            <td>${b.cargoName} (${b.weight} Tons)</td>
+            <td>${b.pickupLocation} → ${b.destination}</td>
+            <td>₹${b.transportCost?.toLocaleString('en-IN')}</td>
+            <td>
+              <span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span>
+              ${b.isReturnLoad ? '<span class="return-load-badge">RETURN LOAD</span>' : ''}
+            </td>
+            <td>
+              ${this.renderStatusActionButtons(b)}
+            </td>
+          </tr>
+        `).join('');
+      }
     } catch (err) {
       container.innerHTML = `<tr><td colspan="7" style="color:red;">Error loading bookings: ${err.message}</td></tr>`;
     }

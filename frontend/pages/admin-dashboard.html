@@ -40,61 +40,117 @@
       <a href="complaints.html">Complaints & Support</a>
     </nav>
 
-    <!-- KPI Cards Grid (Section 35) -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
+    <!-- Summary Metrics Strip -->
+    <div class="summary-panels-row">
+      <div class="summary-panel-card">
         <div class="kpi-label">TOTAL USERS</div>
         <div class="kpi-value" id="stat-total-users">0</div>
-        <div class="kpi-subtext">Registered Accounts</div>
+        <div class="kpi-subtext">Registered Platform Accounts</div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">BUSINESSES</div>
-        <div class="kpi-value" id="stat-businesses">0</div>
-        <div class="kpi-subtext">Shippers / Cargo Owners</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">TRUCK OWNERS</div>
-        <div class="kpi-value" id="stat-truck-owners">0</div>
-        <div class="kpi-subtext">Transporters</div>
-      </div>
-      <div class="kpi-card">
+      <div class="summary-panel-card">
         <div class="kpi-label">REGISTERED TRUCKS</div>
         <div class="kpi-value" id="stat-trucks">0</div>
         <div class="kpi-subtext">Fleet Vehicles</div>
       </div>
-      <div class="kpi-card">
+      <div class="summary-panel-card">
         <div class="kpi-label">POSTED CARGO</div>
         <div class="kpi-value" id="stat-cargo">0</div>
         <div class="kpi-subtext">Total Shipments</div>
       </div>
-      <div class="kpi-card">
+      <div class="summary-panel-card">
         <div class="kpi-label">ACTIVE BOOKINGS</div>
         <div class="kpi-value" id="stat-active-bookings">0</div>
         <div class="kpi-subtext">In-Transit / Confirmed</div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">COMPLETED DELIVERIES</div>
-        <div class="kpi-value" id="stat-completed-deliveries">0</div>
-        <div class="kpi-subtext">Successful Trips</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">RETURN LOADS MATCHED</div>
-        <div class="kpi-value" id="stat-return-matched" style="color:#F97316;">0</div>
-        <div class="kpi-subtext">🔥 Shared Transport Matches</div>
-      </div>
     </div>
 
-    <!-- Highlight Impact Card -->
-    <div class="card" style="background:#0B1220; color:#FFFFFF; border-left:4px solid #F97316;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <span class="return-load-badge">🌱 SUSTAINABILITY & LOGISTICS IMPACT</span>
-          <h3 style="font-size:1.4rem; font-weight:800; margin-top:8px;">ESTIMATED EMPTY TRIPS REDUCED</h3>
-          <p style="color:#94A3B8; font-size:0.9rem;">Total empty return legs eliminated across Indian corridors through return-load matching.</p>
+    <!-- Operational Dashboard Grid (2 Columns on Desktop) -->
+    <div class="dashboard-layout-grid">
+      <!-- Main Column: Breakdown Metrics & Impact -->
+      <div>
+        <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom:20px;">
+          <div class="kpi-card">
+            <div class="kpi-label">BUSINESSES</div>
+            <div class="kpi-value" id="stat-businesses">0</div>
+            <div class="kpi-subtext">Shippers / Cargo Owners</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">TRUCK OWNERS</div>
+            <div class="kpi-value" id="stat-truck-owners">0</div>
+            <div class="kpi-subtext">Transporters</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">COMPLETED DELIVERIES</div>
+            <div class="kpi-value" id="stat-completed-deliveries">0</div>
+            <div class="kpi-subtext">Successful Trips</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">RETURN LOADS MATCHED</div>
+            <div class="kpi-value" id="stat-return-matched" style="color:#F97316;">0</div>
+            <div class="kpi-subtext">🔥 Shared Transport Matches</div>
+          </div>
         </div>
-        <div style="text-align:right;">
-          <div style="font-size:3rem; font-weight:900; color:#F97316;" id="stat-empty-reduced">0</div>
-          <span style="font-size:0.75rem; color:#CBD5E1; text-transform:uppercase; font-weight:700;">EMPTY LEGS SAVED</span>
+
+        <!-- Highlight Impact Panel -->
+        <div class="card" style="background:#0B1220; color:#FFFFFF; border-left:4px solid #F97316; margin-bottom:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span class="return-load-badge">🌱 LOGISTICS IMPACT</span>
+              <h3 style="font-size:1.3rem; font-weight:800; margin-top:8px;">EMPTY TRIPS REDUCED</h3>
+              <p style="color:#94A3B8; font-size:0.85rem;">Eliminated return legs across Indian transit corridors.</p>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:2.5rem; font-weight:900; color:#F97316;" id="stat-empty-reduced">0</div>
+              <span style="font-size:0.7rem; color:#CBD5E1; text-transform:uppercase; font-weight:700;">EMPTY LEGS SAVED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Platform Users Overview -->
+        <div class="op-section-card">
+          <div class="card-title">
+            <span>REGISTERED PLATFORM USERS</span>
+            <a href="users.html" class="btn btn-sm btn-outline-dark">View All Users →</a>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-list">
+                <tr><td colspan="5" style="text-align:center; padding:16px;">Loading platform users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Complaints & Support Panel -->
+      <div class="op-section-card">
+        <div class="card-title">
+          <span>PLATFORM COMPLAINTS</span>
+          <a href="complaints.html" class="btn btn-sm btn-outline-dark">All Tickets</a>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-complaints-list">
+              <tr><td colspan="4" style="text-align:center; padding:16px;">Loading complaints...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

@@ -46,54 +46,77 @@
       <a href="earnings.html">Earnings & Impact</a>
     </nav>
 
-    <!-- Fleet Overview -->
-    <div class="card">
-      <div class="card-title">
-        <span>MY TRUCK FLEET</span>
-        <a href="register-truck.html" class="btn btn-outline-dark" style="padding:4px 12px; font-size:0.75rem;">+ Register Truck</a>
+    <!-- Summary Metrics Strip -->
+    <div class="summary-panels-row">
+      <div class="summary-panel-card">
+        <div class="kpi-label">REGISTERED TRUCKS</div>
+        <div class="kpi-value" id="stat-truck-total">0</div>
+        <div class="kpi-subtext">Active Fleet Count</div>
       </div>
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Vehicle Number</th>
-              <th>Type</th>
-              <th>Route</th>
-              <th>Capacity</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="my-fleet-list">
-            <tr><td colspan="7" style="text-align:center; padding:20px;">Loading fleet data...</td></tr>
-          </tbody>
-        </table>
+      <div class="summary-panel-card">
+        <div class="kpi-label">AVAILABLE FLEET</div>
+        <div class="kpi-value" id="stat-truck-available">0</div>
+        <div class="kpi-subtext">Ready for Matching</div>
+      </div>
+      <div class="summary-panel-card">
+        <div class="kpi-label">ON ACTIVE TRIP</div>
+        <div class="kpi-value" id="stat-truck-active">0</div>
+        <div class="kpi-subtext">Booked / In Transit</div>
+      </div>
+      <div class="summary-panel-card">
+        <div class="kpi-label">RETURN LOADS MODE</div>
+        <div class="kpi-value" id="stat-truck-return">0</div>
+        <div class="kpi-subtext">Empty Return Optimization</div>
       </div>
     </div>
 
-    <!-- Active Bookings & Trips -->
-    <div class="card">
-      <div class="card-title">
-        <span>TRIP BOOKINGS & DELIVERY MANAGEMENT</span>
+    <!-- Operational Dashboard Grid (2 Columns on Desktop) -->
+    <div class="dashboard-layout-grid">
+      <!-- Main Fleet Operations Column -->
+      <div class="op-section-card">
+        <div class="card-title">
+          <span>MY TRUCK FLEET</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Vehicle Number</th>
+                <th>Type</th>
+                <th>Route</th>
+                <th>Capacity</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="my-fleet-list">
+              <tr><td colspan="7" style="text-align:center; padding:20px;">Loading fleet data...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Booking Code</th>
-              <th>Vehicle</th>
-              <th>Cargo</th>
-              <th>Route</th>
-              <th>Cost</th>
-              <th>Status</th>
-              <th>Update Status</th>
-            </tr>
-          </thead>
-          <tbody id="truck-bookings-list">
-            <tr><td colspan="7" style="text-align:center; padding:20px;">Loading bookings...</td></tr>
-          </tbody>
-        </table>
+
+      <!-- Side Operational Panel: Trip Bookings -->
+      <div class="op-section-card">
+        <div class="card-title">
+          <span>TRIP BOOKINGS</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="truck-bookings-list">
+              <tr><td colspan="4" style="text-align:center; padding:20px;">Loading bookings...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </main>

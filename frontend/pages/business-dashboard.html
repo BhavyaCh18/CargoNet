@@ -41,51 +41,76 @@
       <a href="tracking.html">Shipment Tracking</a>
     </nav>
 
-    <!-- Active Cargo Table -->
-    <div class="card">
-      <div class="card-title">
-        <span>MY CARGO POSTINGS</span>
+    <!-- Summary Metrics Strip -->
+    <div class="summary-panels-row">
+      <div class="summary-panel-card">
+        <div class="kpi-label">TOTAL CARGO POSTED</div>
+        <div class="kpi-value" id="stat-biz-cargo">0</div>
+        <div class="kpi-subtext">Postings in Database</div>
       </div>
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Cargo ID</th>
-              <th>Cargo Name</th>
-              <th>Route</th>
-              <th>Weight</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="my-cargo-list">
-            <tr><td colspan="6" style="text-align:center; padding:20px;">Loading cargo...</td></tr>
-          </tbody>
-        </table>
+      <div class="summary-panel-card">
+        <div class="kpi-label">ACTIVE SHIPMENTS</div>
+        <div class="kpi-value" id="stat-biz-active">0</div>
+        <div class="kpi-subtext">In Transit / Confirmed</div>
+      </div>
+      <div class="summary-panel-card">
+        <div class="kpi-label">COMPLETED DELIVERIES</div>
+        <div class="kpi-value" id="stat-biz-delivered">0</div>
+        <div class="kpi-subtext">Successfully Delivered</div>
+      </div>
+      <div class="summary-panel-card">
+        <div class="kpi-label">TOTAL BOOKING SPEND</div>
+        <div class="kpi-value" id="stat-biz-spent">₹0</div>
+        <div class="kpi-subtext">Logistics Expenditure</div>
       </div>
     </div>
 
-    <!-- Recent Bookings Table -->
-    <div class="card">
-      <div class="card-title">
-        <span>RECENT BOOKINGS & SHIPMENTS</span>
+    <!-- Operational Dashboard Grid (2 Columns on Desktop) -->
+    <div class="dashboard-layout-grid">
+      <!-- Main Cargo Operations Column -->
+      <div class="op-section-card">
+        <div class="card-title">
+          <span>MY CARGO POSTINGS</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cargo ID</th>
+                <th>Cargo Name</th>
+                <th>Route</th>
+                <th>Weight</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="my-cargo-list">
+              <tr><td colspan="6" style="text-align:center; padding:20px;">Loading cargo...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Booking Code</th>
-              <th>Cargo</th>
-              <th>Route</th>
-              <th>Cost</th>
-              <th>Status</th>
-              <th>Tracking</th>
-            </tr>
-          </thead>
-          <tbody id="business-bookings-list">
-            <tr><td colspan="6" style="text-align:center; padding:20px;">Loading bookings...</td></tr>
-          </tbody>
-        </table>
+
+      <!-- Side Operational Panel: Recent Bookings -->
+      <div class="op-section-card">
+        <div class="card-title">
+          <span>RECENT BOOKINGS</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="business-bookings-list">
+              <tr><td colspan="4" style="text-align:center; padding:20px;">Loading bookings...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </main>
