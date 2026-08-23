@@ -26,9 +26,49 @@ module.exports = async (req, res) => {
 
         const userId = Number(decoded.sub);
 
-        // Temporary response until we connect
-        // this with your actual bookings table structure
-        return res.status(200).json([]);
+        // Get all bookings belonging to the logged-in business user
+        const result = await pool.query(
+            `
+            SELECT
+                id,
+                booking_code,
+                business_id,
+                truck_id,
+                cargo_id,
+                pickup_location,
+                destination,
+                weight,
+                transport_cost,
+                platform_fee,
+                total_cost,
+                booking_date,
+                status,
+                is_return_load
+            FROM bookings
+            WHERE business_id = $1
+            ORDER BY booking_date DESC
+            `,
+            [userId]
+        );
+
+        const bookings = result.rows.map((booking) => ({
+            id: booking.id,
+            bookingCode: booking.booking_code,
+            businessId: booking.business_id,
+            truckId: booking.truck_id,
+            cargoId: booking.cargo_id,
+            pickupLocation: booking.pickup_location,
+            destination: booking.destination,
+            weight: Number(booking.weight),
+            transportCost: Number(booking.transport_cost),
+            platformFee: Number(booking.platform_fee),
+            totalCost: Number(booking.total_cost),
+            bookingDate: booking.booking_date,
+            status: booking.status,
+            isReturnLoad: booking.is_return_load
+        }));
+
+        return res.status(200).json(bookings);
 
     } catch (error) {
         console.error("Bookings API error:", error);
