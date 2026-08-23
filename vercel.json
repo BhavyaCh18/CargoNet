@@ -5,8 +5,24 @@
             "destination": "/frontend/index.html"
         },
         {
-            "source": "/((?!api/).*)",
-            "destination": "/frontend/$1"
+            "source": "/pages/:path*",
+            "destination": "/frontend/pages/:path*"
+        },
+        {
+            "source": "/css/:path*",
+            "destination": "/frontend/css/:path*"
+        },
+        {
+            "source": "/js/:path*",
+            "destination": "/frontend/js/:path*"
+        },
+        {
+            "source": "/assets/:path*",
+            "destination": "/frontend/assets/:path*"
+        },
+        {
+            "source": "/:path((?!api/).*)",
+            "destination": "/frontend/:path*"
         }
     ]
 }
