@@ -29,11 +29,9 @@ module.exports = async (req, res) => {
 
         const userId = Number(decoded.sub);
 
-        // =========================
-        // GET BOOKINGS FOR LOGGED-IN BUSINESS
-        // =========================
-        const result = await pool.query(
-            `
+        const role = (decoded.role || "").toUpperCase();
+
+        let query = `
             SELECT
                 b.id,
                 b.booking_code,
@@ -49,10 +47,53 @@ module.exports = async (req, res) => {
             LEFT JOIN cargo c
                 ON b.cargo_id = c.id
             WHERE b.business_id = $1
-            ORDER BY b.booking_date DESC
-            `,
-            [userId]
-        );
+            ORDER BY b.booking_date DESC, b.id DESC
+        `;
+        let params = [userId];
+
+        if (role === "TRUCK_OWNER" || role === "TRANSPORTER") {
+            query = `
+                SELECT
+                    b.id,
+                    b.booking_code,
+                    b.pickup_location,
+                    b.destination,
+                    b.weight,
+                    b.total_cost,
+                    b.status,
+                    b.is_return_load,
+                    b.booking_date,
+                    c.cargo_name
+                FROM bookings b
+                JOIN trucks t
+                    ON b.truck_id = t.id
+                LEFT JOIN cargo c
+                    ON b.cargo_id = c.id
+                WHERE t.owner_id = $1
+                ORDER BY b.booking_date DESC, b.id DESC
+            `;
+        } else if (role === "ADMIN") {
+            query = `
+                SELECT
+                    b.id,
+                    b.booking_code,
+                    b.pickup_location,
+                    b.destination,
+                    b.weight,
+                    b.total_cost,
+                    b.status,
+                    b.is_return_load,
+                    b.booking_date,
+                    c.cargo_name
+                FROM bookings b
+                LEFT JOIN cargo c
+                    ON b.cargo_id = c.id
+                ORDER BY b.booking_date DESC, b.id DESC
+            `;
+            params = [];
+        }
+
+        const result = await pool.query(query, params);
 
         // =========================
         // FORMAT RESPONSE FOR FRONTEND

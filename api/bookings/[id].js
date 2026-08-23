@@ -3,6 +3,11 @@ const jwt = require("jsonwebtoken");
 
 module.exports = async (req, res) => {
     try {
+        if (req.query && req.query.id === "my-bookings") {
+            const myBookingsHandler = require("./my-bookings");
+            return myBookingsHandler(req, res);
+        }
+
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
