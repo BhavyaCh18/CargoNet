@@ -120,10 +120,10 @@
           <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" required>
         </div>
 
-        <!-- Role Select (Preserved ID & Backend Values) -->
-        <div class="form-group" style="margin-top: 16px;">
+        <!-- Role Select (Hidden from UI, managed internally by top tabs) -->
+        <div class="form-group" style="display: none;">
           <label class="form-label" for="role">SELECT PLATFORM ROLE</label>
-          <select id="role" class="form-control" required>
+          <select id="role" class="form-control">
             <option value="BUSINESS">🏢 BUSINESS — Shipper / Cargo Owner</option>
             <option value="TRUCK_OWNER">🚚 TRUCK OWNER — Individual Truck Owner</option>
           </select>
