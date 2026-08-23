@@ -18,7 +18,15 @@ export const MatchingModule = {
     try {
       const data = await API.get(`/matching/cargo/${cargoId}`);
       const cargo = data.cargo;
-      const matches = data.matches || [];
+      const rawMatches = data.matches || data.matchingTrucks || data.matching_trucks || [];
+      const matches = rawMatches.map(m => m.truck ? m : {
+        truck: m,
+        matchScore: 100,
+        bestMatch: true,
+        routeScore: 40,
+        capacityScore: 30,
+        dateScore: 20
+      });
 
       if (headerContainer && cargo) {
         headerContainer.innerHTML = `
