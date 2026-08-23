@@ -1,5 +1,50 @@
 import { API } from './api.js';
 
+const CITY_COORDS = {
+  'hyderabad': [17.3850, 78.4867],
+  'bengaluru': [12.9716, 77.5946],
+  'bangalore': [12.9716, 77.5946],
+  'chennai': [13.0827, 80.2707],
+  'mumbai': [19.0760, 72.8777],
+  'delhi': [28.6139, 77.2090],
+  'new delhi': [28.6139, 77.2090],
+  'kolkata': [22.5726, 88.3639],
+  'pune': [18.5204, 73.8567],
+  'jaipur': [26.9124, 75.7873],
+  'ahmedabad': [23.0225, 72.5714],
+  'surat': [21.1702, 72.8311],
+  'visakhapatnam': [17.6868, 83.2185],
+  'vizag': [17.6868, 83.2185],
+  'vijayawada': [16.5062, 80.6480],
+  'nagpur': [21.1458, 79.0882],
+  'lucknow': [26.8467, 80.9462],
+  'kochi': [9.9312, 76.2673],
+  'cochin': [9.9312, 76.2673],
+  'coimbatore': [11.0168, 76.9558],
+  'indore': [22.7196, 75.8577],
+  'bhopal': [23.2599, 77.4126],
+  'patna': [25.5941, 85.1376],
+  'bhubaneswar': [20.2961, 85.8245]
+};
+
+function getCityCoordinates(location) {
+  if (!location || typeof location !== 'string') return null;
+
+  const normalized = location.trim().toLowerCase();
+  if (CITY_COORDS[normalized]) {
+    return CITY_COORDS[normalized];
+  }
+
+  // Handle location strings like "Hyderabad, Telangana"
+  for (const [city, coords] of Object.entries(CITY_COORDS)) {
+    if (normalized.includes(city)) {
+      return coords;
+    }
+  }
+
+  return null;
+}
+
 export const TrackingModule = {
   map: null,
   marker: null,
@@ -48,13 +93,19 @@ export const TrackingModule = {
         </div>
       `;
 
-      this.initMap(tracking.latitude || 17.3850, tracking.longitude || 78.4867, tracking.currentLocation);
+      this.initMap(
+        tracking.latitude,
+        tracking.longitude,
+        tracking.currentLocation,
+        booking.pickupLocation,
+        booking.destination
+      );
     } catch (err) {
       infoContainer.innerHTML = `<p style="color:red;">Error loading tracking details: ${err.message}</p>`;
     }
   },
 
-  initMap(lat, lng, locationName) {
+  initMap(lat, lng, locationName, pickupLocation, destination) {
     const mapElement = document.getElementById('leaflet-map');
     if (!mapElement || typeof L === 'undefined') return;
 
@@ -62,31 +113,50 @@ export const TrackingModule = {
       this.map.remove();
     }
 
-    this.map = L.map('leaflet-map').setView([lat, lng], 7);
+    const hasCoordinates =
+      Number.isFinite(Number(lat)) &&
+      Number.isFinite(Number(lng));
+
+    const trackingCoords = hasCoordinates
+      ? [Number(lat), Number(lng)]
+      : getCityCoordinates(locationName);
+
+    const pickupCoords = getCityCoordinates(pickupLocation);
+    const destCoords = getCityCoordinates(destination);
+
+    // Fallback order for map center
+    const centerCoords = trackingCoords || pickupCoords || destCoords || [17.3850, 78.4867];
+
+    this.map = L.map('leaflet-map').setView(centerCoords, 7);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(this.map);
 
-    // City coordinates lookup for demonstration route rendering
-    const cityCoords = {
-      'hyderabad': [17.3850, 78.4867],
-      'bengaluru': [12.9716, 77.5946],
-      'bangalore': [12.9716, 77.5946],
-      'chennai': [13.0827, 80.2707],
-      'mumbai': [19.0760, 72.8777],
-      'delhi': [28.6139, 77.2090]
-    };
-
     // Add marker for current location
-    this.marker = L.marker([lat, lng]).addTo(this.map)
-      .bindPopup(`<b>🚚 Truck Position</b><br>${locationName}`)
+    const markerCoords = trackingCoords || centerCoords;
+    this.marker = L.marker(markerCoords).addTo(this.map)
+      .bindPopup(`<b>🚚 Truck Position</b><br>${locationName || 'In Transit'}`)
       .openPopup();
 
-    // Draw route line between Hyderabad and Bengaluru
-    const hyd = cityCoords['hyderabad'];
-    const blr = cityCoords['bengaluru'];
-    L.polyline([hyd, blr], { color: '#0B1220', weight: 4, opacity: 0.7, dashArray: '8, 8' }).addTo(this.map);
+    // Draw route line dynamically
+    const routePoints = [];
+    if (pickupCoords) routePoints.push(pickupCoords);
+    if (trackingCoords && (!pickupCoords || trackingCoords[0] !== pickupCoords[0] || trackingCoords[1] !== pickupCoords[1])) {
+      routePoints.push(trackingCoords);
+    }
+    if (destCoords && (!trackingCoords || destCoords[0] !== trackingCoords[0] || destCoords[1] !== trackingCoords[1])) {
+      routePoints.push(destCoords);
+    }
+
+    if (routePoints.length >= 2) {
+      L.polyline(routePoints, {
+        color: '#0B1220',
+        weight: 4,
+        opacity: 0.7,
+        dashArray: '8, 8'
+      }).addTo(this.map);
+    }
   }
 };
 
