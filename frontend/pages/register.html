@@ -6,6 +6,43 @@
   <title>Register | India Shared Transport Network</title>
   <link rel="stylesheet" href="../css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    .role-toggle-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .role-tab-btn {
+      padding: 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--color-border);
+      background: var(--color-bg-light);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .role-tab-btn.active {
+      border-color: var(--color-dark-navy);
+      background: var(--color-dark-navy);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(11, 18, 32, 0.12);
+    }
+    .form-section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin: 20px 0 10px 0;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 4px;
+    }
+  </style>
 </head>
 <body>
 
@@ -25,42 +62,79 @@
     </div>
   </header>
 
-  <main class="main-container" style="max-width: 540px;">
+  <main class="main-container" style="max-width: 560px;">
     <div class="card">
-      <h2 class="card-title">CREATE AN ACCOUNT</h2>
+
+      <!-- Role Selection Tabs -->
+      <div class="role-toggle-tabs">
+        <div id="tab-business" class="role-tab-btn active">
+          🏢 BUSINESS
+          <span style="display:block; font-weight:500; font-size:0.72rem; opacity:0.85;">Shipper / Cargo Owner</span>
+        </div>
+        <div id="tab-truckowner" class="role-tab-btn">
+          🚚 TRUCK OWNER
+          <span style="display:block; font-weight:500; font-size:0.72rem; opacity:0.85;">Individual Owner</span>
+        </div>
+      </div>
+
+      <div id="reg-header-block" style="margin-bottom: 20px;">
+        <h2 id="reg-title" class="card-title" style="border:none; padding-bottom:0; margin-bottom:6px;">🏢 CREATE YOUR BUSINESS ACCOUNT</h2>
+        <p id="reg-subtitle" style="font-size: 0.85rem; color: var(--color-text-muted);">
+          Register your business to post cargo, find available trucks, manage bookings, and track shipments.
+        </p>
+      </div>
+
       <form id="register-form">
+        <!-- Contact / Personal Information -->
+        <div class="form-section-title" id="section-contact-title">CONTACT INFORMATION</div>
+        
         <div class="form-group">
-          <label class="form-label" for="name">FULL NAME / CONTACT PERSON</label>
+          <label class="form-label" for="name" id="name-label">FULL NAME / CONTACT PERSON</label>
           <input type="text" id="name" class="form-control" placeholder="Rajesh Kumar" required>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="email">EMAIL ADDRESS</label>
-          <input type="email" id="email" class="form-control" placeholder="rajesh@company.com" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="password">PASSWORD</label>
-          <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" required>
-        </div>
+        
         <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="email">EMAIL ADDRESS</label>
+            <input type="email" id="email" class="form-control" placeholder="rajesh@company.com" required>
+          </div>
           <div class="form-group">
             <label class="form-label" for="phone">PHONE NUMBER</label>
             <input type="tel" id="phone" class="form-control" placeholder="9876543210" required>
           </div>
+        </div>
+
+        <!-- Business Information (Visible for Business, Hidden for Individual Truck Owner) -->
+        <div id="company-name-group">
+          <div class="form-section-title">BUSINESS INFORMATION</div>
           <div class="form-group">
-            <label class="form-label" for="companyName">COMPANY / FIRM NAME</label>
-            <input type="text" id="companyName" class="form-control" placeholder="Deccan Transports" required>
+            <label class="form-label" for="companyName">BUSINESS / COMPANY / FIRM NAME</label>
+            <input type="text" id="companyName" class="form-control" placeholder="Deccan Enterprises">
           </div>
         </div>
+
+        <!-- Security Section -->
+        <div class="form-section-title">ACCOUNT SECURITY</div>
         <div class="form-group">
+          <label class="form-label" for="password">PASSWORD</label>
+          <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" required>
+        </div>
+
+        <!-- Role Select (Preserved ID & Backend Values) -->
+        <div class="form-group" style="margin-top: 16px;">
           <label class="form-label" for="role">SELECT PLATFORM ROLE</label>
           <select id="role" class="form-control" required>
-            <option value="BUSINESS">🏢 BUSINESS (Shipper / Cargo Owner)</option>
-            <option value="TRUCK_OWNER">🚛 TRUCK OWNER (Fleet Operator / Transporter)</option>
+            <option value="BUSINESS">🏢 BUSINESS — Shipper / Cargo Owner</option>
+            <option value="TRUCK_OWNER">🚚 TRUCK OWNER — Individual Truck Owner</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-solid-dark btn-block">REGISTER ACCOUNT</button>
+
+        <button type="submit" id="submit-btn" class="btn btn-solid-dark btn-block btn-lg" style="margin-top:24px;">
+          CREATE BUSINESS ACCOUNT →
+        </button>
       </form>
-      <p style="text-align: center; margin-top: 16px; font-size: 0.85rem; color: var(--color-text-muted);">
+
+      <p style="text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--color-text-muted);">
         Already have an account? <a href="login.html" style="font-weight: 700; color: var(--color-dark-navy);">Login here</a>
       </p>
     </div>
@@ -69,12 +143,54 @@
   <script type="module">
     import { API } from '../js/api.js';
 
+    const roleSelect = document.getElementById('role');
+    const tabBusiness = document.getElementById('tab-business');
+    const tabTruckOwner = document.getElementById('tab-truckowner');
+    const regTitle = document.getElementById('reg-title');
+    const regSubtitle = document.getElementById('reg-subtitle');
+    const sectionContactTitle = document.getElementById('section-contact-title');
+    const nameLabel = document.getElementById('name-label');
+    const companyGroup = document.getElementById('company-name-group');
+    const companyInput = document.getElementById('companyName');
+    const submitBtn = document.getElementById('submit-btn');
+
+    function updateRoleUI(role) {
+      if (role === 'TRUCK_OWNER' || role === 'TRANSPORTER') {
+        roleSelect.value = 'TRUCK_OWNER';
+        tabBusiness.classList.remove('active');
+        tabTruckOwner.classList.add('active');
+        regTitle.innerText = '🚚 JOIN AS A TRUCK OWNER';
+        regSubtitle.innerText = 'Create your account, register your truck, find available cargo, and access return load opportunities.';
+        sectionContactTitle.innerText = 'PERSONAL INFORMATION';
+        nameLabel.innerText = 'FULL NAME';
+        companyGroup.style.display = 'none';
+        if (companyInput) companyInput.removeAttribute('required');
+        submitBtn.innerText = 'CREATE TRUCK OWNER ACCOUNT →';
+      } else {
+        roleSelect.value = 'BUSINESS';
+        tabTruckOwner.classList.remove('active');
+        tabBusiness.classList.add('active');
+        regTitle.innerText = '🏢 CREATE YOUR BUSINESS ACCOUNT';
+        regSubtitle.innerText = 'Register your business to post cargo, find available trucks, manage bookings, and track shipments.';
+        sectionContactTitle.innerText = 'CONTACT INFORMATION';
+        nameLabel.innerText = 'FULL NAME / CONTACT PERSON';
+        companyGroup.style.display = 'block';
+        if (companyInput) companyInput.setAttribute('required', 'true');
+        submitBtn.innerText = 'CREATE BUSINESS ACCOUNT →';
+      }
+    }
+
+    tabBusiness.addEventListener('click', () => updateRoleUI('BUSINESS'));
+    tabTruckOwner.addEventListener('click', () => updateRoleUI('TRUCK_OWNER'));
+    roleSelect.addEventListener('change', (e) => updateRoleUI(e.target.value));
+
+    // Handle URL parameters
     const params = new URLSearchParams(window.location.search);
     const roleParam = params.get('role');
     if (roleParam === 'TRANSPORTER' || roleParam === 'TRUCK_OWNER') {
-      document.getElementById('role').value = 'TRUCK_OWNER';
-    } else if (roleParam === 'SHIPPER' || roleParam === 'BUSINESS') {
-      document.getElementById('role').value = 'BUSINESS';
+      updateRoleUI('TRUCK_OWNER');
+    } else {
+      updateRoleUI('BUSINESS');
     }
 
     document.getElementById('register-form').addEventListener('submit', async (e) => {
@@ -83,8 +199,12 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const phone = document.getElementById('phone').value;
-      const companyName = document.getElementById('companyName').value;
       const role = document.getElementById('role').value;
+      
+      let companyName = companyInput ? companyInput.value.trim() : '';
+      if (!companyName) {
+        companyName = name || 'Individual Truck Owner';
+      }
 
       try {
         const res = await API.post('/auth/register', { name, email, password, phone, companyName, role });
