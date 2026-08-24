@@ -159,6 +159,46 @@ async function runEndToEndAudit() {
   await authHandler(req, res);
   console.log(`[PASS] Login with New Password: HTTP ${res.statusCode}`);
 
+  // 1E. GOOGLE SIGN-IN FLOWS
+  // i. Existing User Google Login (bizEmail already exists)
+  ({ req, res } = createReqRes("POST", "/api/auth/google", { idToken: `test_google_${bizEmail}` }));
+  await authHandler(req, res);
+  console.log(`[PASS] Existing User Google Sign-In: HTTP ${res.statusCode}, User: ${res.body.user.email}`);
+
+  // ii. New User Google Sign-In (Requires Role Selection)
+  const newGoogleEmail = `test_google_user_${Date.now()}@cargonet.in`;
+  ({ req, res } = createReqRes("POST", "/api/auth/google", { idToken: `test_google_${newGoogleEmail}` }));
+  await authHandler(req, res);
+  if (res.body.requiresRoleSelection && res.body.onboardingToken) {
+    console.log(`[PASS] New Google User Role Selection Required: HTTP ${res.statusCode}`);
+  } else {
+    throw new Error(`Expected role selection for new Google user, got ${JSON.stringify(res.body)}`);
+  }
+  const googleOnboardingToken = res.body.onboardingToken;
+
+  // iii. Attempt ADMIN Role Registration via Google Onboarding (Must fail)
+  ({ req, res } = createReqRes("POST", "/api/auth/google", { onboardingToken: googleOnboardingToken, role: "ADMIN" }));
+  await authHandler(req, res);
+  if (res.statusCode === 400) {
+    console.log(`[PASS] Admin Self-Registration via Google Rejected: HTTP ${res.statusCode}`);
+  } else {
+    throw new Error(`Expected HTTP 400 for Admin Google registration, got ${res.statusCode}`);
+  }
+
+  // iv. Complete New Google User Registration with valid role (BUSINESS)
+  ({ req, res } = createReqRes("POST", "/api/auth/google", { onboardingToken: googleOnboardingToken, role: "BUSINESS" }));
+  await authHandler(req, res);
+  console.log(`[PASS] Complete New Google User Registration: HTTP ${res.statusCode}, User: ${res.body.user.email}, Role: ${res.body.user.role}`);
+
+  // v. Invalid Google Token Rejection
+  ({ req, res } = createReqRes("POST", "/api/auth/google", { idToken: "invalid_token_123" }));
+  await authHandler(req, res);
+  if (res.statusCode === 401) {
+    console.log(`[PASS] Invalid Google Token Rejected: HTTP ${res.statusCode}`);
+  } else {
+    throw new Error(`Expected HTTP 401 for invalid Google token, got ${res.statusCode}`);
+  }
+
   // 2. FLOW 2: CARGO & TRUCK REGISTRATION
   console.log("\n--- FLOW 2: CARGO & TRUCK REGISTRATION ---");
   ({ req, res } = createReqRes("POST", "/api/cargo", {

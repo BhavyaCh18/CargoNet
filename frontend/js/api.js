@@ -99,5 +99,13 @@ export const API = {
 
   resetPassword(email, verificationToken, newPassword) {
     return this.post('/auth/reset-password', { email, verificationToken, newPassword });
+  },
+
+  googleAuth(idToken) {
+    return this.post('/auth/google', { idToken });
+  },
+
+  completeGoogleRegistration(onboardingToken, role) {
+    return this.post('/auth/google', { onboardingToken, role });
   }
 };

@@ -2,6 +2,42 @@ const pool = require("../lib/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const https = require("https");
+
+async function verifyGoogleToken(idToken) {
+    if ((process.env.NODE_ENV === "test" || process.env.OTP_TEST_MODE === "true") && idToken && idToken.startsWith("test_google_")) {
+        const email = idToken.replace("test_google_", "");
+        return { email, name: "Google Test User", sub: "google_test_sub_123" };
+    }
+    return new Promise((resolve, reject) => {
+        const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`;
+        https.get(url, (res) => {
+            let data = "";
+            res.on("data", chunk => data += chunk);
+            res.on("end", () => {
+                try {
+                    const parsed = JSON.parse(data);
+                    if (parsed.error_description || parsed.error) {
+                        return reject(new Error(parsed.error_description || "Invalid Google token"));
+                    }
+                    if (!parsed.email || parsed.email_verified === "false") {
+                        return reject(new Error("Google account email is not verified"));
+                    }
+                    if (process.env.GOOGLE_CLIENT_ID && parsed.aud !== process.env.GOOGLE_CLIENT_ID) {
+                        return reject(new Error("Google Client ID mismatch"));
+                    }
+                    resolve({
+                        email: parsed.email,
+                        name: parsed.name || parsed.email.split("@")[0],
+                        sub: parsed.sub
+                    });
+                } catch (e) {
+                    reject(new Error("Failed to parse Google verification response"));
+                }
+            });
+        }).on("error", (err) => reject(err));
+    });
+}
 
 module.exports = async (req, res) => {
     try {
@@ -339,6 +375,166 @@ module.exports = async (req, res) => {
                     status: newUser.status,
                     created_at: newUser.created_at
                 }
+            });
+        }
+
+        // =========================
+        // POST /api/auth/google
+        // =========================
+        if (url.endsWith("/google") || url.includes("/google")) {
+            if (req.method !== "POST") {
+                return res.status(405).json({ error: "Method not allowed" });
+            }
+
+            const { idToken, onboardingToken, role } = req.body || {};
+
+            // Stage B: Complete Google Registration with onboardingToken + selected role
+            if (onboardingToken) {
+                if (!role) {
+                    return res.status(400).json({ error: "Role is required for Google onboarding" });
+                }
+
+                const normalizedRole = role.toUpperCase();
+                if (!["BUSINESS", "TRUCK_OWNER"].includes(normalizedRole)) {
+                    return res.status(400).json({
+                        error: "Invalid role selection. Admin self-registration is strictly prohibited."
+                    });
+                }
+
+                let decoded;
+                try {
+                    decoded = jwt.verify(onboardingToken, process.env.JWT_SECRET);
+                } catch (err) {
+                    return res.status(401).json({
+                        error: "Invalid or expired Google onboarding token. Please sign in with Google again."
+                    });
+                }
+
+                if (decoded.purpose !== "GOOGLE_ONBOARDING") {
+                    return res.status(401).json({ error: "Invalid token type for Google onboarding" });
+                }
+
+                const { email, name } = decoded;
+
+                // Check if user exists (duplicate email check)
+                const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+                if (existingUser.rows.length > 0) {
+                    const user = existingUser.rows[0];
+                    if (user.status === "BLOCKED") {
+                        return res.status(403).json({ error: "Account is blocked. Please contact support." });
+                    }
+                    const token = jwt.sign(
+                        { email: user.email, role: user.role, name: user.name },
+                        process.env.JWT_SECRET,
+                        { subject: String(user.id), expiresIn: "7d" }
+                    );
+                    return res.status(200).json({
+                        token,
+                        user: {
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                            phone: user.phone,
+                            company_name: user.company_name,
+                            role: user.role,
+                            status: user.status
+                        }
+                    });
+                }
+
+                // Create user with unusable random password hash
+                const randomPassword = crypto.randomBytes(32).toString("hex");
+                const hashedPassword = await bcrypt.hash(randomPassword, 10);
+                const companyName = normalizedRole === "BUSINESS" ? (name || "Business Shipper") : "Individual Truck Owner";
+
+                const result = await pool.query(
+                    `
+                    INSERT INTO users (name, email, password_hash, phone, company_name, role, status, created_at)
+                    VALUES ($1, $2, $3, NULL, $4, $5, 'ACTIVE', NOW())
+                    RETURNING id, name, email, phone, company_name, role, status, created_at
+                    `,
+                    [name, email, hashedPassword, companyName, normalizedRole]
+                );
+
+                const newUser = result.rows[0];
+
+                const token = jwt.sign(
+                    { email: newUser.email, role: newUser.role, name: newUser.name },
+                    process.env.JWT_SECRET,
+                    { subject: String(newUser.id), expiresIn: "7d" }
+                );
+
+                return res.status(201).json({
+                    token,
+                    user: {
+                        id: newUser.id,
+                        name: newUser.name,
+                        email: newUser.email,
+                        phone: newUser.phone,
+                        company_name: newUser.company_name,
+                        role: newUser.role,
+                        status: newUser.status,
+                        created_at: newUser.created_at
+                    }
+                });
+            }
+
+            // Stage A: Verify Google ID token
+            if (!idToken) {
+                return res.status(400).json({ error: "Google ID Token is required" });
+            }
+
+            let googleProfile;
+            try {
+                googleProfile = await verifyGoogleToken(idToken);
+            } catch (tokenErr) {
+                return res.status(401).json({ error: tokenErr.message || "Invalid Google authentication" });
+            }
+
+            const { email, name, sub } = googleProfile;
+
+            // Check if user already exists
+            const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
+            if (existingUser.rows.length > 0) {
+                const user = existingUser.rows[0];
+                if (user.status === "BLOCKED") {
+                    return res.status(403).json({ error: "Account is blocked. Please contact support." });
+                }
+
+                const token = jwt.sign(
+                    { email: user.email, role: user.role, name: user.name },
+                    process.env.JWT_SECRET,
+                    { subject: String(user.id), expiresIn: "7d" }
+                );
+
+                return res.status(200).json({
+                    token,
+                    user: {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        phone: user.phone,
+                        company_name: user.company_name,
+                        role: user.role,
+                        status: user.status
+                    }
+                });
+            }
+
+            // New user: Issue Google Onboarding Token (short-lived, 15 minutes)
+            const signedOnboardingToken = jwt.sign(
+                { email, name, sub, purpose: "GOOGLE_ONBOARDING" },
+                process.env.JWT_SECRET,
+                { expiresIn: "15m" }
+            );
+
+            return res.status(200).json({
+                success: true,
+                requiresRoleSelection: true,
+                onboardingToken: signedOnboardingToken,
+                verifiedEmail: email,
+                verifiedName: name
             });
         }
 
