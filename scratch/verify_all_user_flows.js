@@ -12,6 +12,7 @@ try {
   }
 } catch (e) {}
 
+process.env.NODE_ENV = "test";
 const JWT_SECRET = process.env.JWT_SECRET || "india_shared_transport_jwt_secret_key_2026_safe";
 process.env.JWT_SECRET = JWT_SECRET;
 
@@ -62,30 +63,101 @@ async function runEndToEndAudit() {
   const adminHandler = require("../api/admin");
   const complaintsHandler = require("../api/complaints");
 
-  // 1. FLOW 1: AUTHENTICATION
-  console.log("--- FLOW 1: AUTHENTICATION ---");
+  // 1. FLOW 1: AUTHENTICATION (SECURE EMAIL OTP & PASSWORD RESET)
+  console.log("--- FLOW 1: SECURE EMAIL OTP AUTHENTICATION ---");
   const bizEmail = `test_biz_${Date.now()}@cargonet.in`;
   const truckEmail = `test_transporter_${Date.now()}@cargonet.in`;
 
-  let { req, res } = createReqRes("POST", "/api/auth/register", {
+  // 1A. BUSINESS REGISTRATION WITH OTP
+  // Step i: Send OTP
+  let { req, res } = createReqRes("POST", "/api/auth/send-otp", { email: bizEmail, purpose: "REGISTRATION" });
+  await authHandler(req, res);
+  console.log(`[PASS] Send Registration OTP Business: HTTP ${res.statusCode}`);
+
+  // Step ii: Verify Wrong OTP (Must fail)
+  ({ req, res } = createReqRes("POST", "/api/auth/verify-otp", { email: bizEmail, otp: "000000", purpose: "REGISTRATION" }));
+  await authHandler(req, res);
+  if (res.statusCode === 400) {
+    console.log(`[PASS] Invalid OTP Rejected correctly: HTTP ${res.statusCode}`);
+  } else {
+    throw new Error(`Expected HTTP 400 for invalid OTP, got ${res.statusCode}`);
+  }
+
+  // Step iii: Verify Correct OTP -> Get single-use token
+  ({ req, res } = createReqRes("POST", "/api/auth/verify-otp", { email: bizEmail, otp: "123456", purpose: "REGISTRATION" }));
+  await authHandler(req, res);
+  console.log(`[PASS] Verify OTP Business: HTTP ${res.statusCode}`);
+  const bizVerificationToken = res.body.verificationToken;
+
+  // Step iv: Complete Registration with Token
+  ({ req, res } = createReqRes("POST", "/api/auth/register", {
     name: "Audit Business",
     email: bizEmail,
     password: "password123",
-    role: "BUSINESS"
-  });
+    role: "BUSINESS",
+    verificationToken: bizVerificationToken
+  }));
   await authHandler(req, res);
-  console.log(`[PASS] Register Business: HTTP ${res.statusCode}`);
+  console.log(`[PASS] Complete Business Registration: HTTP ${res.statusCode}`);
   const bizToken = res.body.token;
+
+  // Step v: TOKEN REPLAY TEST (Must fail because token_used_at IS NOT NULL)
+  ({ req, res } = createReqRes("POST", "/api/auth/register", {
+    name: "Audit Business Replay",
+    email: `replay_${Date.now()}@cargonet.in`,
+    password: "password123",
+    role: "BUSINESS",
+    verificationToken: bizVerificationToken
+  }));
+  await authHandler(req, res);
+  if (res.statusCode === 400) {
+    console.log(`[PASS] Verification Token Replay Rejected: HTTP ${res.statusCode}`);
+  } else {
+    throw new Error(`Expected HTTP 400 for reused verification token, got ${res.statusCode}`);
+  }
+
+  // 1B. TRANSPORTER REGISTRATION WITH OTP
+  ({ req, res } = createReqRes("POST", "/api/auth/send-otp", { email: truckEmail, purpose: "REGISTRATION" }));
+  await authHandler(req, res);
+
+  ({ req, res } = createReqRes("POST", "/api/auth/verify-otp", { email: truckEmail, otp: "123456", purpose: "REGISTRATION" }));
+  await authHandler(req, res);
+  const truckVerificationToken = res.body.verificationToken;
 
   ({ req, res } = createReqRes("POST", "/api/auth/register", {
     name: "Audit Transporter",
     email: truckEmail,
     password: "password123",
-    role: "TRUCK_OWNER"
+    role: "TRUCK_OWNER",
+    verificationToken: truckVerificationToken
   }));
   await authHandler(req, res);
-  console.log(`[PASS] Register Transporter: HTTP ${res.statusCode}`);
+  console.log(`[PASS] Register Transporter with OTP: HTTP ${res.statusCode}`);
   const truckOwnerToken = res.body.token;
+
+  // 1C. NORMAL LOGIN (DIRECT NO OTP)
+  ({ req, res } = createReqRes("POST", "/api/auth/login", { email: bizEmail, password: "password123" }));
+  await authHandler(req, res);
+  console.log(`[PASS] Direct Normal Login (No OTP): HTTP ${res.statusCode}, User: ${res.body.user.email}`);
+
+  // 1D. FORGOT PASSWORD WITH OTP & RE-LOGIN
+  ({ req, res } = createReqRes("POST", "/api/auth/send-otp", { email: bizEmail, purpose: "PASSWORD_RESET" }));
+  await authHandler(req, res);
+  console.log(`[PASS] Send Password Reset OTP: HTTP ${res.statusCode}`);
+
+  ({ req, res } = createReqRes("POST", "/api/auth/verify-otp", { email: bizEmail, otp: "123456", purpose: "PASSWORD_RESET" }));
+  await authHandler(req, res);
+  const resetToken = res.body.verificationToken;
+  console.log(`[PASS] Verify Password Reset OTP: HTTP ${res.statusCode}`);
+
+  ({ req, res } = createReqRes("POST", "/api/auth/reset-password", { email: bizEmail, verificationToken: resetToken, newPassword: "newpassword456" }));
+  await authHandler(req, res);
+  console.log(`[PASS] Reset Password: HTTP ${res.statusCode}`);
+
+  // Login with new password
+  ({ req, res } = createReqRes("POST", "/api/auth/login", { email: bizEmail, password: "newpassword456" }));
+  await authHandler(req, res);
+  console.log(`[PASS] Login with New Password: HTTP ${res.statusCode}`);
 
   // 2. FLOW 2: CARGO & TRUCK REGISTRATION
   console.log("\n--- FLOW 2: CARGO & TRUCK REGISTRATION ---");

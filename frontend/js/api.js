@@ -87,5 +87,17 @@ export const API = {
       method: 'PUT',
       body: JSON.stringify(body)
     });
+  },
+
+  sendOTP(email, purpose) {
+    return this.post('/auth/send-otp', { email, purpose });
+  },
+
+  verifyOTP(email, otp, purpose) {
+    return this.post('/auth/verify-otp', { email, otp, purpose });
+  },
+
+  resetPassword(email, verificationToken, newPassword) {
+    return this.post('/auth/reset-password', { email, verificationToken, newPassword });
   }
 };

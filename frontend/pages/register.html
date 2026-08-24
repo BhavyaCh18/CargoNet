@@ -140,6 +140,46 @@
     </div>
   </main>
 
+  <!-- OTP Verification Modal -->
+  <div id="otp-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(11, 18, 32, 0.85); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#FFFFFF; border-radius:14px; padding:32px; max-width:440px; width:90%; box-shadow:0 20px 25px -5px rgba(0, 0, 0, 0.3); border:2px solid var(--color-dark-navy); text-align:center;">
+      <div style="font-size:36px; margin-bottom:12px;">📧</div>
+      <h3 style="color:var(--color-dark-navy); font-size:1.35rem; font-weight:800; margin-bottom:8px;">VERIFY YOUR EMAIL</h3>
+      <p style="font-size:0.88rem; color:var(--color-text-muted); margin-bottom:20px;">
+        We sent a 6-digit verification code to:<br>
+        <strong id="masked-email" style="color:var(--color-dark-navy); font-size:0.95rem;"></strong>
+      </p>
+
+      <form id="otp-form">
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:20px;">
+          <input type="text" maxlength="1" class="otp-digit-input" style="width:46px; height:52px; font-size:1.4rem; text-align:center; font-weight:800; border:2px solid var(--color-border); border-radius:8px; color:var(--color-dark-navy); background:#F8FAFC;" required>
+          <input type="text" maxlength="1" class="otp-digit-input" style="width:46px; height:52px; font-size:1.4rem; text-align:center; font-weight:800; border:2px solid var(--color-border); border-radius:8px; color:var(--color-dark-navy); background:#F8FAFC;" required>
+          <input type="text" maxlength="1" class="otp-digit-input" style="width:46px; height:52px; font-size:1.4rem; text-align:center; font-weight:800; border:2px solid var(--color-border); border-radius:8px; color:var(--color-dark-navy); background:#F8FAFC;" required>
+          <input type="text" maxlength="1" class="otp-digit-input" style="width:46px; height:52px; font-size:1.4rem; text-align:center; font-weight:800; border:2px solid var(--color-border); border-radius:8px; color:var(--color-dark-navy); background:#F8FAFC;" required>
+          <input type="text" maxlength="1" class="otp-digit-input" style="width:46px; height:52px; font-size:1.4rem; text-align:center; font-weight:800; border:2px solid var(--color-border); border-radius:8px; color:var(--color-dark-navy); background:#F8FAFC;" required>
+          <input type="text" maxlength="1" class="otp-digit-input" style="width:46px; height:52px; font-size:1.4rem; text-align:center; font-weight:800; border:2px solid var(--color-border); border-radius:8px; color:var(--color-dark-navy); background:#F8FAFC;" required>
+        </div>
+
+        <div id="otp-error" style="color:#DC2626; font-size:0.82rem; font-weight:600; margin-bottom:12px; display:none;"></div>
+
+        <button type="submit" id="verify-otp-btn" class="btn btn-block btn-lg" style="background:#F97316; color:#FFFFFF; border:none; font-weight:800;">
+          VERIFY CODE →
+        </button>
+      </form>
+
+      <div style="margin-top:20px; font-size:0.85rem; color:var(--color-text-muted);">
+        <p id="resend-timer-text">Resend code in <span id="cooldown-seconds" style="font-weight:700; color:var(--color-dark-navy);">60</span> seconds</p>
+        <button id="resend-otp-btn" type="button" class="btn btn-ghost-dark btn-sm" style="display:none; margin:8px auto 0 auto; color:#F97316; font-weight:700; background:none; border:none; cursor:pointer;">
+          Didn't receive the code? Resend OTP
+        </button>
+      </div>
+
+      <button id="cancel-otp-btn" type="button" style="background:none; border:none; color:var(--color-text-muted); font-size:0.8rem; text-decoration:underline; cursor:pointer; margin-top:16px;">
+        Back to Registration Form
+      </button>
+    </div>
+  </div>
+
   <script type="module">
     import { API } from '../js/api.js';
 
@@ -153,6 +193,18 @@
     const companyGroup = document.getElementById('company-name-group');
     const companyInput = document.getElementById('companyName');
     const submitBtn = document.getElementById('submit-btn');
+
+    const otpModal = document.getElementById('otp-modal');
+    const maskedEmailEl = document.getElementById('masked-email');
+    const otpForm = document.getElementById('otp-form');
+    const otpError = document.getElementById('otp-error');
+    const verifyOtpBtn = document.getElementById('verify-otp-btn');
+    const resendOtpBtn = document.getElementById('resend-otp-btn');
+    const cancelOtpBtn = document.getElementById('cancel-otp-btn');
+    const digitInputs = document.querySelectorAll('.otp-digit-input');
+
+    let pendingRegistrationData = null;
+    let countdownInterval = null;
 
     function updateRoleUI(role) {
       if (role === 'TRUCK_OWNER' || role === 'TRANSPORTER') {
@@ -193,12 +245,53 @@
       updateRoleUI('BUSINESS');
     }
 
+    // OTP Input Focus Handlers
+    digitInputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < digitInputs.length - 1) {
+          digitInputs[index + 1].focus();
+        }
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          digitInputs[index - 1].focus();
+        }
+      });
+    });
+
+    function maskEmail(email) {
+      if (!email || !email.includes('@')) return email;
+      const parts = email.split('@');
+      const user = parts[0];
+      const maskedUser = user.length > 2 ? user[0] + '***' + user[user.length - 1] : user[0] + '***';
+      return `${maskedUser}@${parts[1]}`;
+    }
+
+    function startResendTimer() {
+      let seconds = 60;
+      document.getElementById('resend-timer-text').style.display = 'block';
+      resendOtpBtn.style.display = 'none';
+      document.getElementById('cooldown-seconds').innerText = seconds;
+
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        seconds--;
+        document.getElementById('cooldown-seconds').innerText = seconds;
+        if (seconds <= 0) {
+          clearInterval(countdownInterval);
+          document.getElementById('resend-timer-text').style.display = 'none';
+          resendOtpBtn.style.display = 'inline-block';
+        }
+      }, 1000);
+    }
+
+    // Step 1: Submit Form -> Send OTP -> Show Modal
     document.getElementById('register-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const phone = document.getElementById('phone').value;
+      const phone = document.getElementById('phone').value.trim();
       const role = document.getElementById('role').value;
       
       let companyName = companyInput ? companyInput.value.trim() : '';
@@ -206,20 +299,94 @@
         companyName = name || 'Individual Truck Owner';
       }
 
-      try {
-        const res = await API.post('/auth/register', { name, email, password, phone, companyName, role });
-        API.setToken(res.token);
-        API.setUser(res.user);
-        alert('Registration successful!');
+      pendingRegistrationData = { name, email, password, phone, companyName, role };
 
-        if (res.user.role === 'TRUCK_OWNER' || res.user.role === 'TRANSPORTER') {
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'SENDING OTP...';
+
+      try {
+        await API.sendOTP(email, 'REGISTRATION');
+        maskedEmailEl.innerText = maskEmail(email);
+        otpError.style.display = 'none';
+        digitInputs.forEach(i => i.value = '');
+        otpModal.style.display = 'flex';
+        digitInputs[0].focus();
+        startResendTimer();
+      } catch (err) {
+        alert(err.message || 'Failed to send OTP.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = role === 'TRUCK_OWNER' ? 'CREATE TRUCK OWNER ACCOUNT →' : 'CREATE BUSINESS ACCOUNT →';
+      }
+    });
+
+    // Step 2: Verify OTP -> Complete Registration
+    otpForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      let otpCode = '';
+      digitInputs.forEach(i => otpCode += i.value.trim());
+
+      if (otpCode.length !== 6) {
+        otpError.innerText = 'Please enter all 6 digits of the verification code.';
+        otpError.style.display = 'block';
+        return;
+      }
+
+      verifyOtpBtn.disabled = true;
+      verifyOtpBtn.innerText = 'VERIFYING...';
+      otpError.style.display = 'none';
+
+      try {
+        // Verify OTP to obtain single-use verification token
+        const verifyRes = await API.verifyOTP(pendingRegistrationData.email, otpCode, 'REGISTRATION');
+        const verificationToken = verifyRes.verificationToken;
+
+        // Complete registration with original data + verificationToken
+        const regRes = await API.post('/auth/register', {
+          ...pendingRegistrationData,
+          verificationToken
+        });
+
+        API.setToken(regRes.token);
+        API.setUser(regRes.user);
+
+        otpModal.style.display = 'none';
+        alert('Email verified successfully! Registration complete.');
+
+        if (regRes.user.role === 'TRUCK_OWNER' || regRes.user.role === 'TRANSPORTER') {
           window.location.href = 'truck-owner-dashboard.html';
         } else {
           window.location.href = 'business-dashboard.html';
         }
       } catch (err) {
-        alert(err.message || 'Registration failed.');
+        otpError.innerText = err.message || 'Verification failed.';
+        otpError.style.display = 'block';
+      } finally {
+        verifyOtpBtn.disabled = false;
+        verifyOtpBtn.innerText = 'VERIFY CODE →';
       }
+    });
+
+    // Resend OTP Button Handler
+    resendOtpBtn.addEventListener('click', async () => {
+      if (!pendingRegistrationData) return;
+      resendOtpBtn.disabled = true;
+      try {
+        await API.sendOTP(pendingRegistrationData.email, 'REGISTRATION');
+        otpError.style.display = 'none';
+        alert('A new verification code has been sent to your email.');
+        startResendTimer();
+      } catch (err) {
+        otpError.innerText = err.message || 'Failed to resend OTP.';
+        otpError.style.display = 'block';
+      } finally {
+        resendOtpBtn.disabled = false;
+      }
+    });
+
+    cancelOtpBtn.addEventListener('click', () => {
+      otpModal.style.display = 'none';
+      if (countdownInterval) clearInterval(countdownInterval);
     });
   </script>
 </body>
