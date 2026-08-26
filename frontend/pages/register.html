@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register | India Shared Transport Network</title>
   <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/notifications.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     .role-toggle-tabs {
@@ -313,7 +314,10 @@
         digitInputs[0].focus();
         startResendTimer();
       } catch (err) {
-        alert(err.message || 'Failed to send OTP.');
+        NotificationSystem.showError({
+          title: 'OTP Delivery Failed',
+          message: err.message || 'Failed to send verification code. Please try again.'
+        });
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = role === 'TRUCK_OWNER' ? 'CREATE TRUCK OWNER ACCOUNT →' : 'CREATE BUSINESS ACCOUNT →';
@@ -351,13 +355,19 @@
         API.setUser(regRes.user);
 
         otpModal.style.display = 'none';
-        alert('Email verified successfully! Registration complete.');
 
-        if (regRes.user.role === 'TRUCK_OWNER' || regRes.user.role === 'TRANSPORTER') {
-          window.location.href = 'truck-owner-dashboard.html';
-        } else {
-          window.location.href = 'business-dashboard.html';
-        }
+        NotificationSystem.showSuccess({
+          title: 'Registration Successful!',
+          message: 'Your email has been verified and your registration is complete.',
+          buttonText: 'Continue',
+          onConfirm: () => {
+            if (regRes.user.role === 'TRUCK_OWNER' || regRes.user.role === 'TRANSPORTER') {
+              window.location.href = 'truck-owner-dashboard.html';
+            } else {
+              window.location.href = 'business-dashboard.html';
+            }
+          }
+        });
       } catch (err) {
         otpError.innerText = err.message || 'Verification failed.';
         otpError.style.display = 'block';
@@ -374,7 +384,10 @@
       try {
         await API.sendOTP(pendingRegistrationData.email, 'REGISTRATION');
         otpError.style.display = 'none';
-        alert('A new verification code has been sent to your email.');
+        NotificationSystem.showToast({
+          message: 'A new verification code has been sent to your email.',
+          type: 'success'
+        });
         startResendTimer();
       } catch (err) {
         otpError.innerText = err.message || 'Failed to resend OTP.';

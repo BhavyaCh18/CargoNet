@@ -57,10 +57,20 @@ export const AdminModule = {
   async toggleBlockUser(userId) {
     try {
       await API.put(`/admin/users/${userId}/toggle-block`, {});
-      alert("User status updated successfully.");
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showToast({
+          message: 'User status updated successfully.',
+          type: 'success'
+        });
+      }
       this.loadUsers();
     } catch (err) {
-      alert(`Failed to update status: ${err.message}`);
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showError({
+          title: 'Status Update Error',
+          message: `Failed to update status: ${err.message}`
+        });
+      }
     }
   },
 
@@ -166,10 +176,20 @@ export const AdminModule = {
   async resolveComplaint(id) {
     try {
       await API.put(`/complaints/${id}/resolve`, {});
-      alert("Complaint resolved.");
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showToast({
+          message: 'Complaint resolved successfully.',
+          type: 'success'
+        });
+      }
       this.loadComplaints();
     } catch (err) {
-      alert(`Error resolving complaint: ${err.message}`);
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showError({
+          title: 'Complaint Resolution Error',
+          message: `Error resolving complaint: ${err.message}`
+        });
+      }
     }
   }
 };

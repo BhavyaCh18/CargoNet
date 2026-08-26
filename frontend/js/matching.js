@@ -108,17 +108,40 @@ export const MatchingModule = {
 
   async bookTruck(cargoId, truckId) {
     if (!Auth.checkSession()) {
-      alert("Please login first to book a truck.");
-      window.location.href = "login.html";
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showWarning({
+          title: 'Authentication Required',
+          message: 'Please login first to book a truck.',
+          buttonText: 'Go to Login',
+          onConfirm: () => { window.location.href = 'login.html'; }
+        });
+      } else {
+        window.location.href = 'login.html';
+      }
       return;
     }
 
     try {
       const booking = await API.post('/bookings', { cargoId, truckId });
-      alert(`Booking Successful! Code: ${booking.bookingCode}`);
-      window.location.href = `payment.html?bookingId=${booking.id}`;
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showSuccess({
+          title: 'Booking Confirmed',
+          message: `Your truck booking has been created successfully! Booking Code: ${booking.bookingCode}`,
+          buttonText: 'Proceed to Payment',
+          onConfirm: () => {
+            window.location.href = `payment.html?bookingId=${booking.id}`;
+          }
+        });
+      } else {
+        window.location.href = `payment.html?bookingId=${booking.id}`;
+      }
     } catch (err) {
-      alert(`Booking Failed: ${err.message}`);
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showError({
+          title: 'Booking Failed',
+          message: `Unable to complete truck booking: ${err.message}`
+        });
+      }
     }
   }
 };

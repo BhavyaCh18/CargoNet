@@ -107,10 +107,25 @@ export const ReturnLoadsModule = {
   async acceptReturnCargo(truckId, cargoId) {
     try {
       const booking = await API.post('/bookings/return-load', { truckId, cargoId });
-      alert(`Return Cargo Accepted Successfully! Return Booking Code: ${booking.bookingCode}`);
-      window.location.href = 'truck-bookings.html';
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showSuccess({
+          title: 'Return Cargo Accepted',
+          message: `Return Cargo Accepted Successfully! Return Booking Code: ${booking.bookingCode}`,
+          buttonText: 'View My Bookings',
+          onConfirm: () => {
+            window.location.href = 'truck-bookings.html';
+          }
+        });
+      } else {
+        window.location.href = 'truck-bookings.html';
+      }
     } catch (err) {
-      alert(`Failed to accept return cargo: ${err.message}`);
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showError({
+          title: 'Failed to Accept Return Cargo',
+          message: err.message
+        });
+      }
     }
   }
 };

@@ -29,8 +29,15 @@ export const Auth = {
     });
 
     if (normalizedAllowed.length > 0 && !normalizedAllowed.includes(normalizedUserRole)) {
-      alert(`Access Restricted. Allowed roles: ${allowedRoles.join(', ')}`);
-      window.location.href = 'login.html';
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showWarning({
+          title: 'Access Restricted',
+          message: `Allowed roles for this action: ${allowedRoles.join(', ')}`,
+          onConfirm: () => { window.location.href = 'login.html'; }
+        });
+      } else {
+        window.location.href = 'login.html';
+      }
       return false;
     }
     return true;

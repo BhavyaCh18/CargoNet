@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login | India Shared Transport Network</title>
   <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/notifications.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -212,7 +213,10 @@
           window.location.href = 'business-dashboard.html';
         }
       } catch (err) {
-        alert(err.message || 'Login failed.');
+        NotificationSystem.showError({
+          title: 'Login Failed',
+          message: err.message || 'The email or password you entered is incorrect. Please try again.'
+        });
       }
     });
 
@@ -248,7 +252,10 @@
           }
         }
       } catch (err) {
-        alert(err.message || 'Google authentication failed.');
+        NotificationSystem.showError({
+          title: 'Google Sign-In Failed',
+          message: err.message || 'Google authentication failed. Please try again.'
+        });
       }
     }
 
@@ -268,7 +275,10 @@
       if (window.google && google.accounts && google.accounts.id && clientId) {
         google.accounts.id.prompt();
       } else {
-        alert('Google Sign-In requires GOOGLE_CLIENT_ID to be configured in your environment.');
+        NotificationSystem.showWarning({
+          title: 'Google Sign-In Unavailable',
+          message: 'Google Sign-In requires GOOGLE_CLIENT_ID to be configured in your environment.'
+        });
       }
     });
 
@@ -283,13 +293,18 @@
         API.setToken(res.token);
         API.setUser(res.user);
         googleRoleModal.style.display = 'none';
-        alert('Registration complete!');
-
-        if (res.user.role === 'TRUCK_OWNER' || res.user.role === 'TRANSPORTER') {
-          window.location.href = 'truck-owner-dashboard.html';
-        } else {
-          window.location.href = 'business-dashboard.html';
-        }
+        NotificationSystem.showSuccess({
+          title: 'Registration Successful',
+          message: 'Welcome to CargoNet! Your account has been registered successfully.',
+          buttonText: 'Continue',
+          onConfirm: () => {
+            if (res.user.role === 'TRUCK_OWNER' || res.user.role === 'TRANSPORTER') {
+              window.location.href = 'truck-owner-dashboard.html';
+            } else {
+              window.location.href = 'business-dashboard.html';
+            }
+          }
+        });
       } catch (err) {
         googleRoleErrorEl.innerText = err.message || 'Failed to complete Google registration.';
         googleRoleErrorEl.style.display = 'block';

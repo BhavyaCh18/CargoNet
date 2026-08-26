@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulated Payment | India Shared Transport Network</title>
   <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/notifications.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -52,11 +53,13 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const bookingId = urlParams.get('bookingId');
+    let currentBooking = null;
 
     async function loadPaymentDetails() {
       if (!bookingId) return;
       try {
         const booking = await API.get(`/bookings/${bookingId}`);
+        currentBooking = booking;
         document.getElementById('payment-summary').innerHTML = `
           <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:16px;">
             <div style="font-size:0.8rem; font-weight:700; color:#64748B; text-transform:uppercase;">BOOKING CODE</div>
@@ -77,21 +80,60 @@
           </div>
         `;
       } catch (err) {
-        alert("Error loading booking: " + err.message);
+        NotificationSystem.showError({
+          title: 'Booking Load Error',
+          message: 'Error loading booking details: ' + err.message
+        });
       }
     }
 
-    document.getElementById('payment-form').addEventListener('submit', async (e) => {
+    const paymentForm = document.getElementById('payment-form');
+    const submitBtn = paymentForm.querySelector('button[type="submit"]');
+
+    paymentForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      if (submitBtn.disabled) return;
+      submitBtn.disabled = true;
+
+      NotificationSystem.showLoading('Processing Payment... Please wait while we securely process your payment.');
+
       try {
         const res = await API.post('/payments', {
           bookingId: parseInt(bookingId),
           paymentMethod: document.getElementById('paymentMethod').value
         });
-        alert(`Payment Successful! Transaction ID: ${res.transactionId}`);
-        window.location.href = `business-bookings.html`;
+
+        NotificationSystem.hideLoading();
+
+        NotificationSystem.showPaymentSuccess({
+          title: 'Payment Successful',
+          message: 'Your payment has been completed successfully.',
+          amount: currentBooking?.totalCost,
+          transactionId: res.transactionId,
+          bookingCode: currentBooking?.bookingCode,
+          buttonText: 'View Booking',
+          onConfirm: () => {
+            window.location.href = 'business-bookings.html';
+          }
+        });
       } catch (err) {
-        alert("Payment failed: " + err.message);
+        NotificationSystem.hideLoading();
+        submitBtn.disabled = false;
+
+        NotificationSystem.showPaymentFailure({
+          title: 'Payment Failed',
+          message: 'We were unable to complete your payment.',
+          reason: err.message,
+          retryText: 'Try Again',
+          cancelText: 'Cancel',
+          onRetry: () => {
+            submitBtn.disabled = false;
+          },
+          onCancel: () => {
+            submitBtn.disabled = false;
+          }
+        });
       }
     });
 

@@ -123,21 +123,41 @@ export const TruckOwnerModule = {
   async advanceBookingStatus(bookingId, nextStatus) {
     try {
       await API.put(`/bookings/${bookingId}/status`, { status: nextStatus });
-      alert(`Trip status updated to: ${nextStatus}`);
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showToast({
+          message: `Trip status updated to: ${nextStatus}`,
+          type: 'success'
+        });
+      }
       this.loadMyBookings();
       this.loadMyFleet();
     } catch (err) {
-      alert(`Failed to update status: ${err.message}`);
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showError({
+          title: 'Status Update Failed',
+          message: `Failed to update status: ${err.message}`
+        });
+      }
     }
   },
 
   async updateTruckStatus(truckId, status) {
     try {
       await API.put(`/trucks/${truckId}/status`, { status });
-      alert(`Truck status set to ${status}`);
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showToast({
+          message: `Truck status set to ${status}`,
+          type: 'info'
+        });
+      }
       this.loadMyFleet();
     } catch (err) {
-      alert(`Error updating truck status: ${err.message}`);
+      if (window.NotificationSystem) {
+        window.NotificationSystem.showError({
+          title: 'Status Update Error',
+          message: `Error updating truck status: ${err.message}`
+        });
+      }
     }
   },
 
@@ -191,10 +211,25 @@ export const TruckOwnerModule = {
 
       try {
         const saved = await API.post('/trucks', truckData);
-        alert(`Truck registered successfully! Vehicle: ${saved.vehicleNumber}`);
-        window.location.href = 'truck-owner-dashboard.html';
+        if (window.NotificationSystem) {
+          window.NotificationSystem.showSuccess({
+            title: 'Truck Registered Successfully',
+            message: `Your truck (${saved.vehicleNumber}) has been added to the CargoNet network.`,
+            buttonText: 'View My Fleet',
+            onConfirm: () => {
+              window.location.href = 'truck-owner-dashboard.html';
+            }
+          });
+        } else {
+          window.location.href = 'truck-owner-dashboard.html';
+        }
       } catch (err) {
-        alert(`Failed to register truck: ${err.message}`);
+        if (window.NotificationSystem) {
+          window.NotificationSystem.showError({
+            title: 'Truck Registration Failed',
+            message: `Failed to register truck: ${err.message}`
+          });
+        }
       }
     });
   }

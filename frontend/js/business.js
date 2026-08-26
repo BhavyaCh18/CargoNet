@@ -203,26 +203,32 @@ export const BusinessModule = {
 
 
       try {
-
         const saved = await API.post(
           '/cargo',
           cargoData
         );
 
-        alert(
-          `Cargo created successfully! Search ID: C00${saved.id}`
-        );
-
-        window.location.href =
-          `matching.html?cargoId=${saved.id}`;
-
+        if (window.NotificationSystem) {
+          window.NotificationSystem.showSuccess({
+            title: 'Cargo Created Successfully',
+            message: `Your cargo shipment (#C00${saved.id}) has been posted to the network.`,
+            buttonText: 'Find Matching Trucks',
+            onConfirm: () => {
+              window.location.href = `matching.html?cargoId=${saved.id}`;
+            }
+          });
+        } else {
+          window.location.href = `matching.html?cargoId=${saved.id}`;
+        }
       } catch (err) {
-
         console.error("Error creating cargo:", err);
 
-        alert(
-          `Failed to create cargo: ${err.message}`
-        );
+        if (window.NotificationSystem) {
+          window.NotificationSystem.showError({
+            title: 'Unable to Create Cargo',
+            message: `Something went wrong while creating your cargo: ${err.message}`
+          });
+        }
       }
 
     });
