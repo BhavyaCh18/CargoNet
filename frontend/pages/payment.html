@@ -50,6 +50,7 @@
 
   <script type="module">
     import { API } from '../js/api.js';
+    import { formatPickupSchedule } from '../js/business.js';
 
     const urlParams = new URLSearchParams(window.location.search);
     const bookingId = urlParams.get('bookingId');
@@ -60,10 +61,26 @@
       try {
         const booking = await API.get(`/bookings/${bookingId}`);
         currentBooking = booking;
+
+        const scheduleText = formatPickupSchedule(booking.pickupDate, booking.pickupStartTime, booking.pickupEndTime);
+
         document.getElementById('payment-summary').innerHTML = `
-          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:16px;">
-            <div style="font-size:0.8rem; font-weight:700; color:#64748B; text-transform:uppercase;">BOOKING CODE</div>
-            <div style="font-size:1.3rem; font-weight:800; color:#0B1220; margin-bottom:12px;">${booking.bookingCode}</div>
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <div style="font-size:0.75rem; font-weight:700; color:#64748B; text-transform:uppercase;">BOOKING CODE</div>
+                <div style="font-size:1.3rem; font-weight:800; color:#0B1220;">${booking.bookingCode}</div>
+              </div>
+              <span class="pill-badge" style="margin:0;">${booking.status}</span>
+            </div>
+
+            <div style="border-top:1px solid #E2E8F0; border-bottom:1px solid #E2E8F0; padding:12px 0; margin-bottom:12px; font-size:0.88rem; display:grid; gap:8px;">
+              <div>📦 <strong>Cargo:</strong> ${booking.cargoName} (${booking.weight} Tons)</div>
+              <div>📍 <strong>Route:</strong> ${booking.pickupLocation} → ${booking.destination}</div>
+              <div>📅 <strong>Pickup Window:</strong> ${scheduleText}</div>
+              <div>👤 <strong>Truck Owner:</strong> ${booking.truckOwnerName || 'Transporter'} (${booking.truckOwnerPhone || 'N/A'})</div>
+              <div>🚚 <strong>Vehicle:</strong> ${booking.vehicleNumber || 'Unassigned'} (${booking.vehicleType || 'Truck'})</div>
+            </div>
             
             <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;">
               <span>Transport Cost:</span>
@@ -73,9 +90,9 @@
               <span>Platform Fee (5%):</span>
               <strong>₹${booking.platformFee?.toLocaleString('en-IN')}</strong>
             </div>
-            <div style="display:flex; justify-content:space-between; border-top:2px dashed #0B1220; padding-top:8px; font-size:1.1rem;">
+            <div style="display:flex; justify-content:space-between; border-top:2px dashed #0B1220; padding-top:10px; font-size:1.1rem; margin-top:6px;">
               <strong>Total Amount:</strong>
-              <strong style="color:#0B1220;">₹${booking.totalCost?.toLocaleString('en-IN')}</strong>
+              <strong style="color:#0B1220; font-size:1.2rem;">₹${booking.totalCost?.toLocaleString('en-IN')}</strong>
             </div>
           </div>
         `;

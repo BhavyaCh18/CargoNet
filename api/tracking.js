@@ -49,11 +49,19 @@ module.exports = async (req, res) => {
                 b.status,
                 b.is_return_load,
                 c.cargo_name,
+                c.pickup_date,
+                c.pickup_start_time,
+                c.pickup_end_time,
+                t.vehicle_number,
+                t.vehicle_type,
                 t.owner_id AS truck_owner_id,
-                t.current_location AS truck_current_location
+                t.current_location AS truck_current_location,
+                u_owner.name AS truck_owner_name,
+                u_owner.phone AS truck_owner_phone
             FROM bookings b
             LEFT JOIN cargo c ON b.cargo_id = c.id
             LEFT JOIN trucks t ON b.truck_id = t.id
+            LEFT JOIN users u_owner ON t.owner_id = u_owner.id
             WHERE b.id = $1
             `,
             [bookingId]
@@ -112,7 +120,14 @@ module.exports = async (req, res) => {
                 destination: booking.destination,
                 weight: Number(booking.weight),
                 status: booking.status,
-                isReturnLoad: Boolean(booking.is_return_load)
+                isReturnLoad: Boolean(booking.is_return_load),
+                vehicleNumber: booking.vehicle_number || "Unassigned",
+                vehicleType: booking.vehicle_type || "Truck",
+                truckOwnerName: booking.truck_owner_name || "Transporter",
+                truckOwnerPhone: booking.truck_owner_phone || "Not provided",
+                pickupDate: booking.pickup_date,
+                pickupStartTime: booking.pickup_start_time,
+                pickupEndTime: booking.pickup_end_time
             },
             tracking: tracking
         });

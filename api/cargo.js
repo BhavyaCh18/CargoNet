@@ -29,24 +29,32 @@ module.exports = async (req, res) => {
             const result = await pool.query(
                 `
         SELECT
-          id,
-          cargo_name AS "cargoName",
-          pickup_location AS "pickupLocation",
-          destination,
-          weight,
-          description,
-          pickup_date AS "pickupDate",
-          pickup_start_time AS "pickupStartTime",
-          pickup_end_time AS "pickupEndTime",
-          required_delivery_date AS "requiredDeliveryDate",
-          preferred_vehicle_type AS "preferredVehicleType",
-          special_handling AS "specialHandling",
-          status,
-          business_id AS "businessId",
-          created_at AS "createdAt"
-        FROM cargo
-        WHERE business_id = $1
-        ORDER BY created_at DESC
+          c.id,
+          c.cargo_name AS "cargoName",
+          c.pickup_location AS "pickupLocation",
+          c.destination,
+          c.weight,
+          c.description,
+          c.pickup_date AS "pickupDate",
+          c.pickup_start_time AS "pickupStartTime",
+          c.pickup_end_time AS "pickupEndTime",
+          c.required_delivery_date AS "requiredDeliveryDate",
+          c.preferred_vehicle_type AS "preferredVehicleType",
+          c.special_handling AS "specialHandling",
+          c.status,
+          c.business_id AS "businessId",
+          c.created_at AS "createdAt",
+          b.id AS "bookingId",
+          b.status AS "bookingStatus"
+        FROM cargo c
+        LEFT JOIN (
+          SELECT DISTINCT ON (cargo_id) id, cargo_id, status
+          FROM bookings
+          WHERE status NOT IN ('CANCELLED')
+          ORDER BY cargo_id, id DESC
+        ) b ON c.id = b.cargo_id
+        WHERE c.business_id = $1
+        ORDER BY c.created_at DESC
         `,
                 [userId]
             );

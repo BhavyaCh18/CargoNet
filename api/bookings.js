@@ -48,11 +48,15 @@ module.exports = async (req, res) => {
                     c.pickup_start_time,
                     c.pickup_end_time,
                     t.vehicle_number,
-                    u.name AS business_name
+                    t.vehicle_type,
+                    u.name AS business_name,
+                    u_owner.name AS truck_owner_name,
+                    u_owner.phone AS truck_owner_phone
                 FROM bookings b
                 LEFT JOIN cargo c ON b.cargo_id = c.id
                 LEFT JOIN trucks t ON b.truck_id = t.id
                 LEFT JOIN users u ON b.business_id = u.id
+                LEFT JOIN users u_owner ON t.owner_id = u_owner.id
                 WHERE b.business_id = $1
                 ORDER BY b.booking_date DESC, b.id DESC
             `;
@@ -76,11 +80,15 @@ module.exports = async (req, res) => {
                         c.pickup_start_time,
                         c.pickup_end_time,
                         t.vehicle_number,
-                        u.name AS business_name
+                        t.vehicle_type,
+                        u.name AS business_name,
+                        u_owner.name AS truck_owner_name,
+                        u_owner.phone AS truck_owner_phone
                     FROM bookings b
                     JOIN trucks t ON b.truck_id = t.id
                     LEFT JOIN cargo c ON b.cargo_id = c.id
                     LEFT JOIN users u ON b.business_id = u.id
+                    LEFT JOIN users u_owner ON t.owner_id = u_owner.id
                     WHERE t.owner_id = $1
                     ORDER BY b.booking_date DESC, b.id DESC
                 `;
@@ -102,11 +110,15 @@ module.exports = async (req, res) => {
                         c.pickup_start_time,
                         c.pickup_end_time,
                         t.vehicle_number,
-                        u.name AS business_name
+                        t.vehicle_type,
+                        u.name AS business_name,
+                        u_owner.name AS truck_owner_name,
+                        u_owner.phone AS truck_owner_phone
                     FROM bookings b
                     LEFT JOIN cargo c ON b.cargo_id = c.id
                     LEFT JOIN trucks t ON b.truck_id = t.id
                     LEFT JOIN users u ON b.business_id = u.id
+                    LEFT JOIN users u_owner ON t.owner_id = u_owner.id
                     ORDER BY b.booking_date DESC, b.id DESC
                 `;
                 params = [];
@@ -126,7 +138,10 @@ module.exports = async (req, res) => {
                 status: booking.status,
                 isReturnLoad: Boolean(booking.is_return_load),
                 vehicleNumber: booking.vehicle_number || "Unassigned",
+                vehicleType: booking.vehicle_type || "Truck",
                 businessName: booking.business_name || "Business",
+                truckOwnerName: booking.truck_owner_name || "Transporter",
+                truckOwnerPhone: booking.truck_owner_phone || "Not provided",
                 pickupDate: booking.pickup_date,
                 pickupStartTime: booking.pickup_start_time,
                 pickupEndTime: booking.pickup_end_time
@@ -311,7 +326,36 @@ module.exports = async (req, res) => {
         // =========================
         if (req.method === "GET" && bookingIdFromUrl) {
             const bookingResult = await pool.query(
-                "SELECT * FROM bookings WHERE id = $1",
+                `
+                SELECT
+                    b.id,
+                    b.booking_code,
+                    b.business_id,
+                    b.truck_id,
+                    b.cargo_id,
+                    b.pickup_location,
+                    b.destination,
+                    b.weight,
+                    b.transport_cost,
+                    b.platform_fee,
+                    b.total_cost,
+                    b.status,
+                    b.is_return_load,
+                    c.cargo_name,
+                    c.pickup_date,
+                    c.pickup_start_time,
+                    c.pickup_end_time,
+                    t.vehicle_number,
+                    t.vehicle_type,
+                    t.owner_id AS truck_owner_id,
+                    u_owner.name AS truck_owner_name,
+                    u_owner.phone AS truck_owner_phone
+                FROM bookings b
+                LEFT JOIN cargo c ON b.cargo_id = c.id
+                LEFT JOIN trucks t ON b.truck_id = t.id
+                LEFT JOIN users u_owner ON t.owner_id = u_owner.id
+                WHERE b.id = $1
+                `,
                 [bookingIdFromUrl]
             );
 
@@ -321,9 +365,13 @@ module.exports = async (req, res) => {
 
             const booking = bookingResult.rows[0];
 
-            const isOwner = Number(booking.business_id) === userId;
-            const isTransporter = Number(booking.truck_id) === userId; // or truck owner check
+            const isBusinessOwner = Number(booking.business_id) === userId;
+            const isTruckOwner = Number(booking.truck_owner_id) === userId;
             const isAdmin = userRole === "ADMIN";
+
+            if (!isBusinessOwner && !isTruckOwner && !isAdmin) {
+                return res.status(403).json({ error: "You are not authorized to view this booking" });
+            }
 
             return res.status(200).json({
                 id: booking.id,
@@ -331,13 +379,22 @@ module.exports = async (req, res) => {
                 businessId: booking.business_id,
                 truckId: booking.truck_id,
                 cargoId: booking.cargo_id,
+                cargoName: booking.cargo_name || "Cargo",
                 pickupLocation: booking.pickup_location,
                 destination: booking.destination,
                 weight: Number(booking.weight),
                 transportCost: Number(booking.transport_cost),
                 platformFee: Number(booking.platform_fee),
                 totalCost: Number(booking.total_cost),
-                status: booking.status
+                status: booking.status,
+                isReturnLoad: Boolean(booking.is_return_load),
+                vehicleNumber: booking.vehicle_number || "Unassigned",
+                vehicleType: booking.vehicle_type || "Truck",
+                truckOwnerName: booking.truck_owner_name || "Transporter",
+                truckOwnerPhone: booking.truck_owner_phone || "Not provided",
+                pickupDate: booking.pickup_date,
+                pickupStartTime: booking.pickup_start_time,
+                pickupEndTime: booking.pickup_end_time
             });
         }
 

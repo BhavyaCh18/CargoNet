@@ -1,4 +1,5 @@
 import { API } from './api.js';
+import { formatPickupSchedule } from './business.js';
 
 const CITY_COORDS = {
   'hyderabad': [17.3850, 78.4867],
@@ -35,7 +36,6 @@ function getCityCoordinates(location) {
     return CITY_COORDS[normalized];
   }
 
-  // Handle location strings like "Hyderabad, Telangana"
   for (const [city, coords] of Object.entries(CITY_COORDS)) {
     if (normalized.includes(city)) {
       return coords;
@@ -62,33 +62,35 @@ export const TrackingModule = {
       const tracking = data.tracking;
 
       infoContainer.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0B1220; padding-bottom:12px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #E2E8F0; padding-bottom:12px; margin-bottom:16px;">
           <div>
-            <span class="pill-badge" style="margin:0;">BOOKING #${booking.bookingCode}</span>
-            <h2 style="font-size:1.3rem; font-weight:800; margin-top:6px; color:#0B1220;">${booking.cargoName}</h2>
+            <span class="pill-badge" style="margin:0; background:#0B1220; color:#FFFFFF;">BOOKING #${booking.bookingCode}</span>
+            <h2 style="font-size:1.3rem; font-weight:800; margin-top:6px; color:#0B1220;">${booking.cargoName} (${booking.weight} Tons)</h2>
           </div>
           <div style="text-align:right;">
-            <span class="pill-badge" style="margin:0; font-size:0.8rem; background:#0B1220; color:#FFFFFF;">STATUS: ${booking.status}</span>
+            <span class="pill-badge" style="margin:0; font-size:0.8rem; background:#F97316; color:#FFFFFF;">STATUS: ${booking.status}</span>
             ${booking.isReturnLoad ? '<span class="return-load-badge" style="margin-left:8px;">RETURN LOAD</span>' : ''}
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; font-size:0.9rem; margin-bottom:16px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px; font-size:0.9rem; margin-bottom:16px;">
           <div>
-            <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block;">ORIGIN PICKUP</span>
-            <strong>${booking.pickupLocation}</strong>
+            <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block; text-transform:uppercase;">ROUTE</span>
+            <strong>${booking.pickupLocation} &rarr; ${booking.destination}</strong>
           </div>
           <div>
-            <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block;">DESTINATION</span>
-            <strong>${booking.destination}</strong>
+            <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block; text-transform:uppercase;">CURRENT POSITION</span>
+            <strong>${tracking.currentLocation || booking.pickupLocation}</strong>
           </div>
           <div>
-            <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block;">CURRENT LOCATION</span>
-            <strong>${tracking.currentLocation}</strong>
+            <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block; text-transform:uppercase;">PICKUP SCHEDULE</span>
+            <strong>${formatPickupSchedule(booking.pickupDate, booking.pickupStartTime, booking.pickupEndTime)}</strong>
           </div>
           <div>
-            <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block;">LAST UPDATED</span>
-            <strong>Just Now</strong>
+            <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block; text-transform:uppercase;">TRANSPORTER DETAILS</span>
+            <strong>👤 ${booking.truckOwnerName || 'Transporter'}</strong>
+            <div style="font-size:0.8rem; color:#0B1220; font-weight:600;">📞 ${booking.truckOwnerPhone || 'Not provided'}</div>
+            <div style="font-size:0.75rem; color:#64748B;">🚚 ${booking.vehicleNumber} (${booking.vehicleType})</div>
           </div>
         </div>
       `;
@@ -124,7 +126,6 @@ export const TrackingModule = {
     const pickupCoords = getCityCoordinates(pickupLocation);
     const destCoords = getCityCoordinates(destination);
 
-    // Fallback order for map center
     const centerCoords = trackingCoords || pickupCoords || destCoords || [17.3850, 78.4867];
 
     this.map = L.map('leaflet-map').setView(centerCoords, 7);
@@ -133,29 +134,44 @@ export const TrackingModule = {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(this.map);
 
-    // Add marker for current location
-    const markerCoords = trackingCoords || centerCoords;
-    this.marker = L.marker(markerCoords).addTo(this.map)
-      .bindPopup(`<b>🚚 Truck Position</b><br>${locationName || 'In Transit'}`)
-      .openPopup();
-
-    // Draw route line dynamically
     const routePoints = [];
-    if (pickupCoords) routePoints.push(pickupCoords);
-    if (trackingCoords && (!pickupCoords || trackingCoords[0] !== pickupCoords[0] || trackingCoords[1] !== pickupCoords[1])) {
-      routePoints.push(trackingCoords);
+
+    if (pickupCoords) {
+      routePoints.push(pickupCoords);
+      L.circleMarker(pickupCoords, { radius: 8, color: '#16A34A', fillColor: '#22C55E', fillOpacity: 0.9 })
+        .addTo(this.map)
+        .bindPopup(`<b>📦 Pickup Point</b><br>${pickupLocation}`);
     }
-    if (destCoords && (!trackingCoords || destCoords[0] !== trackingCoords[0] || destCoords[1] !== trackingCoords[1])) {
-      routePoints.push(destCoords);
+
+    if (trackingCoords) {
+      if (!pickupCoords || trackingCoords[0] !== pickupCoords[0] || trackingCoords[1] !== pickupCoords[1]) {
+        routePoints.push(trackingCoords);
+      }
+      this.marker = L.marker(trackingCoords).addTo(this.map)
+        .bindPopup(`<b>🚚 Truck Position</b><br>${locationName || 'In Transit'}`)
+        .openPopup();
+    }
+
+    if (destCoords) {
+      if (!trackingCoords || destCoords[0] !== trackingCoords[0] || destCoords[1] !== trackingCoords[1]) {
+        routePoints.push(destCoords);
+      }
+      L.circleMarker(destCoords, { radius: 8, color: '#DC2626', fillColor: '#EF4444', fillOpacity: 0.9 })
+        .addTo(this.map)
+        .bindPopup(`<b>🏁 Destination Point</b><br>${destination}`);
     }
 
     if (routePoints.length >= 2) {
       L.polyline(routePoints, {
         color: '#0B1220',
         weight: 4,
-        opacity: 0.7,
+        opacity: 0.8,
         dashArray: '8, 8'
       }).addTo(this.map);
+
+      this.map.fitBounds(L.latLngBounds(routePoints), { padding: [50, 50], maxZoom: 10 });
+    } else if (routePoints.length === 1) {
+      this.map.setView(routePoints[0], 10);
     }
   }
 };

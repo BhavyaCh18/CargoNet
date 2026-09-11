@@ -75,7 +75,7 @@ export const BusinessModule = {
       if (cargoList.length === 0) {
         container.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align:center; color:#64748B;">
+            <td colspan="6" style="text-align:center; color:#64748B; padding:24px;">
               No cargo posted yet. Click "Create Cargo" to post your first shipment.
             </td>
           </tr>
@@ -83,51 +83,65 @@ export const BusinessModule = {
         return;
       }
 
-      container.innerHTML = cargoList.map(c => `
-        <tr>
-          <td><strong>#C00${c.id}</strong></td>
+      container.innerHTML = cargoList.map(c => {
+        const bStatus = c.bookingStatus || (c.status === 'BOOKED' ? 'CONFIRMED' : (c.status === 'IN_TRANSIT' ? 'IN_TRANSIT' : (c.status === 'DELIVERED' ? 'DELIVERED' : null)));
+        let actionHtml = '';
 
-          <td>
-            <strong>${c.cargoName}</strong>
-            <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">
-              Pickup: ${formatPickupSchedule(c.pickupDate, c.pickupStartTime, c.pickupEndTime)}
-            </div>
-          </td>
+        if (bStatus === 'CONFIRMED') {
+          actionHtml = `<a href="payment.html?bookingId=${c.bookingId}" class="btn btn-sm btn-solid-orange" style="font-weight:700;">Pay Now 💳</a>`;
+        } else if (bStatus === 'PAID' || bStatus === 'CARGO_PICKED_UP' || bStatus === 'IN_TRANSIT') {
+          actionHtml = `<a href="tracking.html?bookingId=${c.bookingId}" class="btn btn-sm btn-outline-dark">Track Shipment 📍</a>`;
+        } else if (bStatus === 'DELIVERED') {
+          actionHtml = `<a href="tracking.html?bookingId=${c.bookingId}" class="btn btn-sm btn-outline-dark">View Details 📋</a>`;
+        } else {
+          actionHtml = `<a href="matching.html?cargoId=${c.id}" class="btn btn-sm btn-solid-dark">Find Trucks →</a>`;
+        }
 
-          <td>
-            ${c.pickupLocation} → ${c.destination}
-          </td>
+        const transporterInfo = (c.truckOwnerName && c.truckOwnerName !== 'Transporter') ? `
+          <div style="font-size:0.75rem; color:#1E293B; margin-top:4px; font-weight:600;">
+            🚚 Transporter: <strong>${c.truckOwnerName}</strong> (${c.truckOwnerPhone || 'Contact available'})
+          </div>
+        ` : '';
 
-          <td>
-            <strong>${c.weight} Tons</strong>
-          </td>
+        return `
+          <tr>
+            <td><strong>#C00${c.id}</strong></td>
 
-          <td>
-            <span
-              class="pill-badge"
-              style="margin:0; font-size:0.7rem;"
-            >
-              ${c.status}
-            </span>
-          </td>
+            <td>
+              <strong>${c.cargoName}</strong>
+              <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">
+                Pickup: ${formatPickupSchedule(c.pickupDate, c.pickupStartTime, c.pickupEndTime)}
+              </div>
+              ${transporterInfo}
+            </td>
 
-          <td>
-            <a
-              href="matching.html?cargoId=${c.id}"
-              class="btn btn-sm btn-solid-dark"
-            >
-              Find Trucks →
-            </a>
-          </td>
-        </tr>
-      `).join('');
+            <td>
+              ${c.pickupLocation} → ${c.destination}
+            </td>
+
+            <td>
+              <strong>${c.weight} Tons</strong>
+            </td>
+
+            <td>
+              <span class="pill-badge" style="margin:0; font-size:0.7rem;">
+                ${c.status}
+              </span>
+            </td>
+
+            <td>
+              ${actionHtml}
+            </td>
+          </tr>
+        `;
+      }).join('');
 
     } catch (err) {
       console.error("Error loading cargo:", err);
 
       container.innerHTML = `
         <tr>
-          <td colspan="6" style="color:red;">
+          <td colspan="6" style="color:red; padding:16px;">
             Error loading cargo: ${err.message}
           </td>
         </tr>
@@ -150,10 +164,10 @@ export const BusinessModule = {
       }
 
       if (bookings.length === 0) {
-        const colSpan = document.getElementById('stat-biz-cargo') ? 4 : 6;
+        const colSpan = document.getElementById('stat-biz-cargo') ? 4 : 7;
         container.innerHTML = `
           <tr>
-            <td colspan="${colSpan}" style="text-align:center; color:#64748B;">
+            <td colspan="${colSpan}" style="text-align:center; color:#64748B; padding:24px;">
               No active or past bookings.
             </td>
           </tr>
@@ -164,35 +178,62 @@ export const BusinessModule = {
       const isDashboard = !!document.getElementById('stat-biz-cargo');
 
       if (isDashboard) {
-        container.innerHTML = bookings.map(b => `
-          <tr>
-            <td><strong>${b.bookingCode}</strong></td>
-            <td>${b.pickupLocation} → ${b.destination}</td>
-            <td><span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span></td>
-            <td><a href="tracking.html?bookingId=${b.id}" class="btn btn-sm btn-outline-dark">Track 📍</a></td>
-          </tr>
-        `).join('');
+        container.innerHTML = bookings.map(b => {
+          let actionBtn = '';
+          if (b.status === 'CONFIRMED') {
+            actionBtn = `<a href="payment.html?bookingId=${b.id}" class="btn btn-sm btn-solid-orange">Pay Now 💳</a>`;
+          } else {
+            actionBtn = `<a href="tracking.html?bookingId=${b.id}" class="btn btn-sm btn-outline-dark">Track 📍</a>`;
+          }
+          return `
+            <tr>
+              <td><strong>${b.bookingCode}</strong></td>
+              <td>${b.pickupLocation} → ${b.destination}</td>
+              <td><span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span></td>
+              <td>${actionBtn}</td>
+            </tr>
+          `;
+        }).join('');
       } else {
-        container.innerHTML = bookings.map(b => `
-          <tr>
-            <td><strong>${b.bookingCode}</strong></td>
-            <td>
-              ${b.cargoName} (${b.weight} Tons)
-              <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">
-                Pickup: ${formatPickupSchedule(b.pickupDate, b.pickupStartTime, b.pickupEndTime)}
-              </div>
-            </td>
-            <td>${b.pickupLocation} → ${b.destination}</td>
-            <td>₹${(b.totalCost || b.transportCost)?.toLocaleString('en-IN')}</td>
-            <td>
-              <span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span>
-              ${b.isReturnLoad ? '<span class="return-load-badge">RETURN LOAD</span>' : ''}
-            </td>
-            <td>
-              <a href="tracking.html?bookingId=${b.id}" class="btn btn-sm btn-outline-dark">Track 📍</a>
-            </td>
-          </tr>
-        `).join('');
+        container.innerHTML = bookings.map(b => {
+          let actionBtn = '';
+          if (b.status === 'CONFIRMED') {
+            actionBtn = `<a href="payment.html?bookingId=${b.id}" class="btn btn-sm btn-solid-orange" style="font-weight:700;">Pay Now 💳</a>`;
+          } else {
+            actionBtn = `<a href="tracking.html?bookingId=${b.id}" class="btn btn-sm btn-outline-dark">Track 📍</a>`;
+          }
+
+          const transporterInfo = b.truckOwnerName ? `
+            <div style="font-size:0.8rem; color:#1E293B; font-weight:600;">
+              👤 ${b.truckOwnerName}
+            </div>
+            <div style="font-size:0.75rem; color:#64748B;">
+              📞 ${b.truckOwnerPhone || 'N/A'} | 🚚 ${b.vehicleNumber} (${b.vehicleType})
+            </div>
+          ` : '<span style="color:#64748B; font-size:0.8rem;">Unassigned</span>';
+
+          return `
+            <tr>
+              <td><strong>${b.bookingCode}</strong></td>
+              <td>
+                <strong>${b.cargoName}</strong> (${b.weight} Tons)
+                <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">
+                  Pickup: ${formatPickupSchedule(b.pickupDate, b.pickupStartTime, b.pickupEndTime)}
+                </div>
+              </td>
+              <td>${b.pickupLocation} → ${b.destination}</td>
+              <td>${transporterInfo}</td>
+              <td>₹${(b.totalCost || b.transportCost)?.toLocaleString('en-IN')}</td>
+              <td>
+                <span class="pill-badge" style="margin:0; font-size:0.7rem;">${b.status}</span>
+                ${b.isReturnLoad ? '<span class="return-load-badge" style="margin-top:4px; display:inline-block;">RETURN LOAD</span>' : ''}
+              </td>
+              <td>
+                ${actionBtn}
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
 
     } catch (err) {
@@ -200,7 +241,7 @@ export const BusinessModule = {
 
       container.innerHTML = `
         <tr>
-          <td colspan="6" style="color:red;">
+          <td colspan="7" style="color:red; padding:16px;">
             Error loading bookings: ${err.message}
           </td>
         </tr>

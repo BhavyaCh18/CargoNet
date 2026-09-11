@@ -260,7 +260,16 @@
     }
 
     // Initialize Google Identity Services SDK if Client ID is configured
-    window.addEventListener('load', () => {
+    window.addEventListener('load', async () => {
+      try {
+        const config = await API.get('/auth/config');
+        if (config && config.googleClientId) {
+          window.GOOGLE_CLIENT_ID = config.googleClientId;
+        }
+      } catch (e) {
+        console.warn('Failed to fetch Google auth config:', e);
+      }
+
       const clientId = window.GOOGLE_CLIENT_ID || '';
       if (window.google && google.accounts && google.accounts.id && clientId) {
         google.accounts.id.initialize({
@@ -270,9 +279,23 @@
       }
     });
 
-    googleBtn.addEventListener('click', () => {
-      const clientId = window.GOOGLE_CLIENT_ID || '';
+    googleBtn.addEventListener('click', async () => {
+      let clientId = window.GOOGLE_CLIENT_ID || '';
+      if (!clientId) {
+        try {
+          const config = await API.get('/auth/config');
+          if (config && config.googleClientId) {
+            window.GOOGLE_CLIENT_ID = config.googleClientId;
+            clientId = config.googleClientId;
+          }
+        } catch (e) {}
+      }
+
       if (window.google && google.accounts && google.accounts.id && clientId) {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleResponse
+        });
         google.accounts.id.prompt();
       } else {
         NotificationSystem.showWarning({
