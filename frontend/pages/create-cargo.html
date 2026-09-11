@@ -79,6 +79,17 @@
           </div>
         </div>
 
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="pickupStartTime">PICKUP TIME SLOT (START)</label>
+            <input type="time" id="pickupStartTime" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pickupEndTime">PICKUP TIME SLOT (END)</label>
+            <input type="time" id="pickupEndTime" class="form-control" required>
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label" for="description">CARGO DESCRIPTION</label>
           <textarea id="description" class="form-control" rows="3" placeholder="Describe cargo contents, packaging type, etc."></textarea>
@@ -97,10 +108,12 @@
   <script type="module">
     import { BusinessModule } from '../js/business.js';
     document.addEventListener('DOMContentLoaded', () => {
-      // Set default dates
+      // Set default dates and times
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('pickupDate').value = today;
       document.getElementById('requiredDeliveryDate').value = today;
+      if (document.getElementById('pickupStartTime')) document.getElementById('pickupStartTime').value = '10:00';
+      if (document.getElementById('pickupEndTime')) document.getElementById('pickupEndTime').value = '12:00';
       BusinessModule.initCreateForm();
     });
   </script>

@@ -36,6 +36,8 @@ module.exports = async (req, res) => {
           weight,
           description,
           pickup_date AS "pickupDate",
+          pickup_start_time AS "pickupStartTime",
+          pickup_end_time AS "pickupEndTime",
           required_delivery_date AS "requiredDeliveryDate",
           preferred_vehicle_type AS "preferredVehicleType",
           special_handling AS "specialHandling",
@@ -64,10 +66,18 @@ module.exports = async (req, res) => {
                 weight,
                 description,
                 pickupDate,
+                pickupStartTime,
+                pickupEndTime,
                 requiredDeliveryDate,
                 preferredVehicleType,
                 specialHandling
-            } = req.body;
+            } = req.body || {};
+
+            if (pickupStartTime && pickupEndTime && pickupStartTime >= pickupEndTime) {
+                return res.status(400).json({
+                    error: "Pickup end time must be later than pickup start time"
+                });
+            }
 
             const result = await pool.query(
                 `
@@ -78,6 +88,8 @@ module.exports = async (req, res) => {
           weight,
           description,
           pickup_date,
+          pickup_start_time,
+          pickup_end_time,
           required_delivery_date,
           preferred_vehicle_type,
           special_handling,
@@ -87,9 +99,9 @@ module.exports = async (req, res) => {
         )
         VALUES (
           $1, $2, $3, $4, $5,
-          $6, $7, $8, $9,
+          $6, $7, $8, $9, $10, $11,
           'SEARCHING',
-          $10,
+          $12,
           NOW()
         )
         RETURNING
@@ -98,6 +110,9 @@ module.exports = async (req, res) => {
           pickup_location AS "pickupLocation",
           destination,
           weight,
+          pickup_date AS "pickupDate",
+          pickup_start_time AS "pickupStartTime",
+          pickup_end_time AS "pickupEndTime",
           status
         `,
                 [
@@ -107,6 +122,8 @@ module.exports = async (req, res) => {
                     weight,
                     description,
                     pickupDate,
+                    pickupStartTime || null,
+                    pickupEndTime || null,
                     requiredDeliveryDate,
                     preferredVehicleType,
                     specialHandling,

@@ -36,6 +36,12 @@ public class CargoController {
         String pDate = (String) body.get("pickupDate");
         if (pDate != null && !pDate.isBlank()) cargo.setPickupDate(LocalDate.parse(pDate));
 
+        String pStart = (String) body.get("pickupStartTime");
+        if (pStart != null && !pStart.isBlank()) cargo.setPickupStartTime(java.time.LocalTime.parse(pStart));
+
+        String pEnd = (String) body.get("pickupEndTime");
+        if (pEnd != null && !pEnd.isBlank()) cargo.setPickupEndTime(java.time.LocalTime.parse(pEnd));
+
         String rDate = (String) body.get("requiredDeliveryDate");
         if (rDate != null && !rDate.isBlank()) cargo.setRequiredDeliveryDate(LocalDate.parse(rDate));
 

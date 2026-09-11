@@ -1,5 +1,6 @@
 import { API } from './api.js';
 import { Auth } from './auth.js';
+import { formatPickupSchedule } from './business.js';
 
 export const ReturnLoadsModule = {
   async init() {
@@ -76,7 +77,7 @@ export const ReturnLoadsModule = {
               </div>
             </div>
 
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:20px; font-size:0.9rem;">
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:20px; font-size:0.9rem;">
               <div>
                 <span style="color:#64748B; font-size:0.75rem; display:block; font-weight:700;">ROUTE</span>
                 <strong>${c.pickupLocation} → ${c.destination}</strong>
@@ -84,6 +85,10 @@ export const ReturnLoadsModule = {
               <div>
                 <span style="color:#64748B; font-size:0.75rem; display:block; font-weight:700;">CARGO WEIGHT</span>
                 <strong>${c.weight} Tons</strong>
+              </div>
+              <div>
+                <span style="color:#64748B; font-size:0.75rem; display:block; font-weight:700;">PICKUP SCHEDULE</span>
+                <strong>${formatPickupSchedule(c.pickupDate, c.pickupStartTime, c.pickupEndTime)}</strong>
               </div>
               <div>
                 <span style="color:#64748B; font-size:0.75rem; display:block; font-weight:700;">SPECIAL HANDLING</span>

@@ -24,6 +24,12 @@ public class CargoRepository {
         Date pDate = rs.getDate("pickup_date");
         if (pDate != null) c.setPickupDate(pDate.toLocalDate());
 
+        Time pStartTime = rs.getTime("pickup_start_time");
+        if (pStartTime != null) c.setPickupStartTime(pStartTime.toLocalTime());
+
+        Time pEndTime = rs.getTime("pickup_end_time");
+        if (pEndTime != null) c.setPickupEndTime(pEndTime.toLocalTime());
+
         Date rDate = rs.getDate("required_delivery_date");
         if (rDate != null) c.setRequiredDeliveryDate(rDate.toLocalDate());
 
@@ -56,8 +62,8 @@ public class CargoRepository {
 
     public Cargo save(Cargo cargo) {
         String sql = "INSERT INTO cargo (cargo_name, pickup_location, destination, weight, description, " +
-                     "pickup_date, required_delivery_date, preferred_vehicle_type, special_handling, status, business_id) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     "pickup_date, pickup_start_time, pickup_end_time, required_delivery_date, preferred_vehicle_type, special_handling, status, business_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, cargo.getCargoName());
@@ -66,14 +72,16 @@ public class CargoRepository {
             ps.setDouble(4, cargo.getWeight());
             ps.setString(5, cargo.getDescription());
             ps.setDate(6, cargo.getPickupDate() != null ? Date.valueOf(cargo.getPickupDate()) : null);
-            ps.setDate(7, cargo.getRequiredDeliveryDate() != null ? Date.valueOf(cargo.getRequiredDeliveryDate()) : null);
-            ps.setString(8, cargo.getPreferredVehicleType());
-            ps.setString(9, cargo.getSpecialHandling());
-            ps.setString(10, cargo.getStatus() != null ? cargo.getStatus() : "SEARCHING");
+            ps.setTime(7, cargo.getPickupStartTime() != null ? Time.valueOf(cargo.getPickupStartTime()) : null);
+            ps.setTime(8, cargo.getPickupEndTime() != null ? Time.valueOf(cargo.getPickupEndTime()) : null);
+            ps.setDate(9, cargo.getRequiredDeliveryDate() != null ? Date.valueOf(cargo.getRequiredDeliveryDate()) : null);
+            ps.setString(10, cargo.getPreferredVehicleType());
+            ps.setString(11, cargo.getSpecialHandling());
+            ps.setString(12, cargo.getStatus() != null ? cargo.getStatus() : "SEARCHING");
             if (cargo.getBusinessId() != null) {
-                ps.setInt(11, cargo.getBusinessId());
+                ps.setInt(13, cargo.getBusinessId());
             } else {
-                ps.setNull(11, Types.INTEGER);
+                ps.setNull(13, Types.INTEGER);
             }
 
             ps.executeUpdate();

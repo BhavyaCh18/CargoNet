@@ -2,6 +2,7 @@ package com.cargonet.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class Cargo {
     private Integer id;
@@ -11,6 +12,8 @@ public class Cargo {
     private Double weight;
     private String description;
     private LocalDate pickupDate;
+    private LocalTime pickupStartTime;
+    private LocalTime pickupEndTime;
     private LocalDate requiredDeliveryDate;
     private String preferredVehicleType;
     private String specialHandling;
@@ -41,6 +44,12 @@ public class Cargo {
 
     public LocalDate getPickupDate() { return pickupDate; }
     public void setPickupDate(LocalDate pickupDate) { this.pickupDate = pickupDate; }
+
+    public LocalTime getPickupStartTime() { return pickupStartTime; }
+    public void setPickupStartTime(LocalTime pickupStartTime) { this.pickupStartTime = pickupStartTime; }
+
+    public LocalTime getPickupEndTime() { return pickupEndTime; }
+    public void setPickupEndTime(LocalTime pickupEndTime) { this.pickupEndTime = pickupEndTime; }
 
     public LocalDate getRequiredDeliveryDate() { return requiredDeliveryDate; }
     public void setRequiredDeliveryDate(LocalDate requiredDeliveryDate) { this.requiredDeliveryDate = requiredDeliveryDate; }

@@ -51,6 +51,8 @@ CREATE TABLE cargo (
     weight DECIMAL(10,2) NOT NULL,
     description TEXT,
     pickup_date DATE,
+    pickup_start_time TIME,
+    pickup_end_time TIME,
     required_delivery_date DATE,
     preferred_vehicle_type VARCHAR(100),
     special_handling TEXT,

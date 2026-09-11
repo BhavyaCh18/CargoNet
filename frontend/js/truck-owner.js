@@ -1,5 +1,6 @@
 import { API } from './api.js';
 import { Auth } from './auth.js';
+import { formatPickupSchedule } from './business.js';
 
 export const TruckOwnerModule = {
   initDashboard() {
@@ -89,7 +90,12 @@ export const TruckOwnerModule = {
           <tr>
             <td><strong>${b.bookingCode}</strong></td>
             <td>${b.vehicleNumber}</td>
-            <td>${b.cargoName} (${b.weight} Tons)</td>
+            <td>
+              ${b.cargoName} (${b.weight} Tons)
+              <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">
+                Pickup: ${formatPickupSchedule(b.pickupDate, b.pickupStartTime, b.pickupEndTime)}
+              </div>
+            </td>
             <td>${b.pickupLocation} → ${b.destination}</td>
             <td>₹${b.transportCost?.toLocaleString('en-IN')}</td>
             <td>

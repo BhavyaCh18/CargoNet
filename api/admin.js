@@ -123,7 +123,9 @@ module.exports = async (req, res) => {
 
             const result = await pool.query(
                 `SELECT c.id, c.cargo_name AS "cargoName", c.pickup_location AS "pickupLocation",
-                        c.destination, c.weight, c.status, u.name AS "businessName"
+                        c.destination, c.weight, c.pickup_date AS "pickupDate",
+                        c.pickup_start_time AS "pickupStartTime", c.pickup_end_time AS "pickupEndTime",
+                        c.status, u.name AS "businessName"
                  FROM cargo c LEFT JOIN users u ON c.business_id = u.id ORDER BY c.created_at DESC`
             );
 

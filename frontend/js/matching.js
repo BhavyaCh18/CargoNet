@@ -1,5 +1,6 @@
 import { API } from './api.js';
 import { Auth } from './auth.js';
+import { formatPickupSchedule } from './business.js';
 
 export const MatchingModule = {
   async init() {
@@ -36,6 +37,7 @@ export const MatchingModule = {
                 <span class="pill-badge" style="background:#1E293B; color:#FFFFFF; border-color:rgba(255,255,255,0.2);">CARGO #C00${cargo.id}</span>
                 <h2 style="font-size:1.5rem; font-weight:800; margin-top:8px;">${cargo.cargoName}</h2>
                 <p style="color:#94A3B8; font-size:0.9rem;">📍 Route: <strong>${cargo.pickupLocation} → ${cargo.destination}</strong> | ⚖️ Weight: <strong>${cargo.weight} Tons</strong></p>
+                <p style="color:#F97316; font-size:0.9rem; margin-top:4px;">⏰ Pickup Window: <strong>${formatPickupSchedule(cargo.pickupDate, cargo.pickupStartTime, cargo.pickupEndTime)}</strong></p>
               </div>
               <div>
                 <span style="font-size:1.2rem; font-weight:800; color:#F97316;">${matches.length} TRUCKS MATCHED</span>

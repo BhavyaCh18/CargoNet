@@ -1,6 +1,46 @@
 import { API } from './api.js';
 import { Auth } from './auth.js';
 
+export function formatTime12h(timeStr) {
+  if (!timeStr) return '';
+  const parts = String(timeStr).split(':');
+  let hours = parseInt(parts[0], 10);
+  if (isNaN(hours)) return timeStr;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedHours = String(hours).padStart(2, '0');
+  const formattedMinutes = (parts[1] || '00').substring(0, 2);
+  return `${formattedHours}:${formattedMinutes} ${ampm}`;
+}
+
+export function formatPickupSchedule(dateStr, startTime, endTime) {
+  if (!dateStr && !startTime && !endTime) return 'Not specified';
+  
+  let formattedDate = '';
+  if (dateStr) {
+    try {
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        formattedDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      } else {
+        formattedDate = String(dateStr);
+      }
+    } catch (e) {
+      formattedDate = String(dateStr);
+    }
+  }
+
+  if (startTime && endTime) {
+    const slot = `${formatTime12h(startTime)} – ${formatTime12h(endTime)}`;
+    return formattedDate ? `${formattedDate} (${slot})` : slot;
+  } else if (startTime) {
+    const slot = formatTime12h(startTime);
+    return formattedDate ? `${formattedDate} (${slot})` : slot;
+  }
+  return formattedDate || 'Not specified';
+}
+
 export const BusinessModule = {
 
   initDashboard() {
@@ -49,6 +89,9 @@ export const BusinessModule = {
 
           <td>
             <strong>${c.cargoName}</strong>
+            <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">
+              Pickup: ${formatPickupSchedule(c.pickupDate, c.pickupStartTime, c.pickupEndTime)}
+            </div>
           </td>
 
           <td>
@@ -133,7 +176,12 @@ export const BusinessModule = {
         container.innerHTML = bookings.map(b => `
           <tr>
             <td><strong>${b.bookingCode}</strong></td>
-            <td>${b.cargoName} (${b.weight} Tons)</td>
+            <td>
+              ${b.cargoName} (${b.weight} Tons)
+              <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">
+                Pickup: ${formatPickupSchedule(b.pickupDate, b.pickupStartTime, b.pickupEndTime)}
+              </div>
+            </td>
             <td>${b.pickupLocation} → ${b.destination}</td>
             <td>₹${(b.totalCost || b.transportCost)?.toLocaleString('en-IN')}</td>
             <td>
@@ -172,6 +220,29 @@ export const BusinessModule = {
 
       e.preventDefault();
 
+      const pickupStartTime = document.getElementById('pickupStartTime')?.value;
+      const pickupEndTime = document.getElementById('pickupEndTime')?.value;
+
+      if (!pickupStartTime || !pickupEndTime) {
+        if (window.NotificationSystem) {
+          window.NotificationSystem.showError({
+            title: 'Validation Error',
+            message: 'Please select both pickup start time and end time.'
+          });
+        }
+        return;
+      }
+
+      if (pickupStartTime >= pickupEndTime) {
+        if (window.NotificationSystem) {
+          window.NotificationSystem.showError({
+            title: 'Invalid Time Slot',
+            message: 'Pickup end time must be later than pickup start time.'
+          });
+        }
+        return;
+      }
+
       const cargoData = {
         cargoName:
           document.getElementById('cargoName').value,
@@ -191,6 +262,10 @@ export const BusinessModule = {
         pickupDate:
           document.getElementById('pickupDate').value,
 
+        pickupStartTime: pickupStartTime,
+
+        pickupEndTime: pickupEndTime,
+
         requiredDeliveryDate:
           document.getElementById('requiredDeliveryDate').value,
 
@@ -208,10 +283,12 @@ export const BusinessModule = {
           cargoData
         );
 
+        const scheduleText = formatPickupSchedule(saved.pickupDate, saved.pickupStartTime, saved.pickupEndTime);
+
         if (window.NotificationSystem) {
           window.NotificationSystem.showSuccess({
             title: 'Cargo Created Successfully',
-            message: `Your cargo shipment (#C00${saved.id}) has been posted to the network.`,
+            message: `Your cargo shipment (#C00${saved.id}) has been posted to the network.\nPickup Window: ${scheduleText}`,
             buttonText: 'Find Matching Trucks',
             onConfirm: () => {
               window.location.href = `matching.html?cargoId=${saved.id}`;

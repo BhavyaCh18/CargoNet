@@ -44,6 +44,9 @@ module.exports = async (req, res) => {
                     b.is_return_load,
                     b.booking_date,
                     c.cargo_name,
+                    c.pickup_date,
+                    c.pickup_start_time,
+                    c.pickup_end_time,
                     t.vehicle_number,
                     u.name AS business_name
                 FROM bookings b
@@ -69,6 +72,9 @@ module.exports = async (req, res) => {
                         b.is_return_load,
                         b.booking_date,
                         c.cargo_name,
+                        c.pickup_date,
+                        c.pickup_start_time,
+                        c.pickup_end_time,
                         t.vehicle_number,
                         u.name AS business_name
                     FROM bookings b
@@ -92,6 +98,9 @@ module.exports = async (req, res) => {
                         b.is_return_load,
                         b.booking_date,
                         c.cargo_name,
+                        c.pickup_date,
+                        c.pickup_start_time,
+                        c.pickup_end_time,
                         t.vehicle_number,
                         u.name AS business_name
                     FROM bookings b
@@ -117,7 +126,10 @@ module.exports = async (req, res) => {
                 status: booking.status,
                 isReturnLoad: Boolean(booking.is_return_load),
                 vehicleNumber: booking.vehicle_number || "Unassigned",
-                businessName: booking.business_name || "Business"
+                businessName: booking.business_name || "Business",
+                pickupDate: booking.pickup_date,
+                pickupStartTime: booking.pickup_start_time,
+                pickupEndTime: booking.pickup_end_time
             }));
 
             return res.status(200).json(bookings);

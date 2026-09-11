@@ -1,5 +1,6 @@
 import { API } from './api.js';
 import { Auth } from './auth.js';
+import { formatPickupSchedule } from './business.js';
 
 export const AdminModule = {
   async initDashboard() {
@@ -107,7 +108,12 @@ export const AdminModule = {
       container.innerHTML = cargoList.map(c => `
         <tr>
           <td><strong>#C00${c.id}</strong></td>
-          <td><strong>${c.cargoName}</strong></td>
+          <td>
+            <strong>${c.cargoName}</strong>
+            <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">
+              Pickup: ${formatPickupSchedule(c.pickupDate, c.pickupStartTime, c.pickupEndTime)}
+            </div>
+          </td>
           <td>${c.businessName || 'Independent Business'}</td>
           <td>${c.pickupLocation} → ${c.destination}</td>
           <td>${c.weight} Tons</td>

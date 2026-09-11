@@ -52,6 +52,9 @@ module.exports = async (req, res) => {
                     c.pickup_location AS "pickupLocation",
                     c.destination,
                     c.weight,
+                    c.pickup_date AS "pickupDate",
+                    c.pickup_start_time AS "pickupStartTime",
+                    c.pickup_end_time AS "pickupEndTime",
                     c.special_handling AS "specialHandling",
                     c.status,
                     u.name AS "businessName"
@@ -115,7 +118,10 @@ module.exports = async (req, res) => {
                 cargoName: cargo.cargo_name,
                 pickupLocation: cargo.pickup_location,
                 destination: cargo.destination,
-                weight: Number(cargo.weight)
+                weight: Number(cargo.weight),
+                pickupDate: cargo.pickup_date,
+                pickupStartTime: cargo.pickup_start_time,
+                pickupEndTime: cargo.pickup_end_time
             },
             matchingTrucks: trucksResult.rows
         });
