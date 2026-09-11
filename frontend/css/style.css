@@ -1427,5 +1427,10 @@ body.landing-page-dark {
   margin: 0;
 }
 
+/* Password Input Toggle Wrapper */
+.password-input-wrapper #toggle-password-btn:hover {
+  color: var(--color-dark-navy) !important;
+}
+
 
 
