@@ -1295,11 +1295,13 @@ body.landing-page-dark {
 /* Capabilities Grid */
 .dark-capabilities-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 860px;
+  margin: 0 auto;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .dark-capabilities-grid {
     grid-template-columns: 1fr;
   }
