@@ -204,20 +204,6 @@
   <script type="module">
     import { API } from '../js/api.js';
 
-    // Auto fill demo email if query param exists
-    const params = new URLSearchParams(window.location.search);
-    const roleParam = params.get('role');
-    if (roleParam === 'ADMIN') {
-      document.getElementById('email').value = 'admin@cargonet.in';
-      document.getElementById('password').value = 'password123';
-    } else if (roleParam === 'TRANSPORTER' || roleParam === 'TRUCK_OWNER') {
-      document.getElementById('email').value = 'truckowner1@cargonet.in';
-      document.getElementById('password').value = 'password123';
-    } else if (roleParam === 'SHIPPER' || roleParam === 'BUSINESS') {
-      document.getElementById('email').value = 'businessA@cargonet.in';
-      document.getElementById('password').value = 'password123';
-    }
-
     // Normal Login Form
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
