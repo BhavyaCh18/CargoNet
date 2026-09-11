@@ -422,8 +422,8 @@ a {
 }
 
 @media (max-width: 900px) {
-  .roles-grid {
-    grid-template-columns: 1fr;
+  .roles-grid, .info-capabilities-grid, .why-cargonet-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
