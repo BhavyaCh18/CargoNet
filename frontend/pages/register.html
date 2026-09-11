@@ -199,32 +199,54 @@
     </div>
   </div>
 
-  <!-- Google Role Selection Modal -->
+  <!-- Google Role Selection & Onboarding Modal -->
   <div id="google-role-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(11, 18, 32, 0.85); z-index:1000; align-items:center; justify-content:center;">
-    <div style="background:#FFFFFF; border-radius:14px; padding:32px; max-width:440px; width:90%; box-shadow:0 20px 25px -5px rgba(0, 0, 0, 0.3); border:2px solid var(--color-dark-navy); text-align:center;">
-      <div style="font-size:36px; margin-bottom:12px;">👤</div>
-      <h3 style="color:var(--color-dark-navy); font-size:1.35rem; font-weight:800; margin-bottom:8px;">SELECT ACCOUNT ROLE</h3>
-      <p style="font-size:0.88rem; color:var(--color-text-muted); margin-bottom:20px;">
-        Choose your platform account type to complete registration for:<br>
-        <strong id="google-user-email" style="color:var(--color-dark-navy); font-size:0.95rem;"></strong>
-      </p>
+    <div style="background:#FFFFFF; border-radius:14px; padding:28px 24px; max-width:460px; width:92%; box-shadow:0 20px 25px -5px rgba(0, 0, 0, 0.3); border:2px solid var(--color-dark-navy); text-align:left; box-sizing:border-box; max-height:90vh; overflow-y:auto;">
+      <div style="text-align:center;">
+        <div style="font-size:36px; margin-bottom:6px;">👤</div>
+        <h3 style="color:var(--color-dark-navy); font-size:1.3rem; font-weight:800; margin-bottom:4px;">COMPLETE REGISTRATION</h3>
+        <p style="font-size:0.85rem; color:var(--color-text-muted); margin-bottom:16px;">
+          Provide your contact details to complete setup for:<br>
+          <strong id="google-user-email" style="color:var(--color-dark-navy); font-size:0.9rem;"></strong>
+        </p>
+      </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
-        <button id="select-role-business" type="button" class="btn" style="padding:16px 12px; border:2px solid var(--color-dark-navy); background:#F8FAFC; color:var(--color-dark-navy); font-weight:800; border-radius:10px; cursor:pointer;">
+      <label class="form-label" style="margin-bottom:6px; display:block; font-size:0.75rem; font-weight:800;">SELECT ACCOUNT ROLE *</label>
+      <div class="google-role-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        <button id="select-role-business" type="button" class="btn" style="padding:12px 10px; border:2px solid var(--color-dark-navy); background:var(--color-dark-navy); color:#FFFFFF; font-weight:800; border-radius:10px; cursor:pointer; width:100%; box-sizing:border-box;">
           🏢 BUSINESS
-          <span style="display:block; font-size:0.72rem; font-weight:500; color:var(--color-text-muted); margin-top:4px;">Shipper / Cargo</span>
+          <span style="display:block; font-size:0.7rem; font-weight:500; opacity:0.9; margin-top:2px;">Shipper / Cargo</span>
         </button>
-        <button id="select-role-truckowner" type="button" class="btn" style="padding:16px 12px; border:2px solid var(--color-dark-navy); background:#F8FAFC; color:var(--color-dark-navy); font-weight:800; border-radius:10px; cursor:pointer;">
+        <button id="select-role-truckowner" type="button" class="btn" style="padding:12px 10px; border:2px solid var(--color-border); background:#F8FAFC; color:var(--color-dark-navy); font-weight:800; border-radius:10px; cursor:pointer; width:100%; box-sizing:border-box;">
           🚚 TRUCK OWNER
-          <span style="display:block; font-size:0.72rem; font-weight:500; color:var(--color-text-muted); margin-top:4px;">Individual Owner</span>
+          <span style="display:block; font-size:0.7rem; font-weight:500; color:var(--color-text-muted); margin-top:2px;">Individual Owner</span>
         </button>
       </div>
 
-      <div id="google-role-error" style="color:#DC2626; font-size:0.82rem; font-weight:600; margin-bottom:12px; display:none;"></div>
+      <!-- User Information Form Fields -->
+      <div id="google-onboarding-fields" style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
+        <div id="google-company-group">
+          <label class="form-label" for="google-company-input" style="font-size:0.75rem; font-weight:800;">BUSINESS / COMPANY / FIRM NAME *</label>
+          <input type="text" id="google-company-input" class="form-control" placeholder="Enter your business name" required>
+        </div>
 
-      <button id="cancel-google-role-btn" type="button" style="background:none; border:none; color:var(--color-text-muted); font-size:0.8rem; text-decoration:underline; cursor:pointer;">
-        Cancel Google Registration
+        <div id="google-phone-group">
+          <label class="form-label" for="google-phone-input" style="font-size:0.75rem; font-weight:800;">PHONE NUMBER *</label>
+          <input type="tel" id="google-phone-input" class="form-control" placeholder="Enter phone number" required>
+        </div>
+      </div>
+
+      <div id="google-role-error" style="color:#DC2626; font-size:0.82rem; font-weight:600; margin-bottom:12px; display:none; text-align:center;"></div>
+
+      <button id="submit-google-onboarding-btn" type="button" class="btn btn-solid-dark btn-block btn-lg" style="margin-bottom:12px; font-weight:800;">
+        COMPLETE REGISTRATION →
       </button>
+
+      <div style="text-align:center;">
+        <button id="cancel-google-role-btn" type="button" style="background:none; border:none; color:var(--color-text-muted); font-size:0.8rem; text-decoration:underline; cursor:pointer;">
+          Cancel Google Registration
+        </button>
+      </div>
     </div>
   </div>
 
@@ -560,24 +582,82 @@
       }
     });
 
-    async function completeGoogleRoleSelection(role) {
+    let selectedGoogleRole = 'BUSINESS';
+
+    function setGoogleRoleUI(role) {
+      selectedGoogleRole = role;
+      const bizBtn = document.getElementById('select-role-business');
+      const truckBtn = document.getElementById('select-role-truckowner');
+      const companyGroup = document.getElementById('google-company-group');
+
+      if (role === 'BUSINESS') {
+        if (bizBtn) {
+          bizBtn.style.background = 'var(--color-dark-navy)';
+          bizBtn.style.color = '#FFFFFF';
+          bizBtn.style.borderColor = 'var(--color-dark-navy)';
+        }
+        if (truckBtn) {
+          truckBtn.style.background = '#F8FAFC';
+          truckBtn.style.color = 'var(--color-dark-navy)';
+          truckBtn.style.borderColor = 'var(--color-border)';
+        }
+        if (companyGroup) companyGroup.style.display = 'block';
+      } else {
+        if (truckBtn) {
+          truckBtn.style.background = 'var(--color-dark-navy)';
+          truckBtn.style.color = '#FFFFFF';
+          truckBtn.style.borderColor = 'var(--color-dark-navy)';
+        }
+        if (bizBtn) {
+          bizBtn.style.background = '#F8FAFC';
+          bizBtn.style.color = 'var(--color-dark-navy)';
+          bizBtn.style.borderColor = 'var(--color-border)';
+        }
+        if (companyGroup) companyGroup.style.display = 'none';
+      }
+    }
+
+    selectRoleBizBtn?.addEventListener('click', () => setGoogleRoleUI('BUSINESS'));
+    selectRoleTruckBtn?.addEventListener('click', () => setGoogleRoleUI('TRUCK_OWNER'));
+
+    const submitGoogleBtn = document.getElementById('submit-google-onboarding-btn');
+    submitGoogleBtn?.addEventListener('click', async () => {
       if (!pendingGoogleOnboardingToken) return;
+
+      const phoneInput = document.getElementById('google-phone-input');
+      const companyInput = document.getElementById('google-company-input');
+
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      const companyName = companyInput ? companyInput.value.trim() : '';
+
+      if (!phone) {
+        googleRoleErrorEl.innerText = 'Phone number is required to complete registration.';
+        googleRoleErrorEl.style.display = 'block';
+        return;
+      }
+
+      if (selectedGoogleRole === 'BUSINESS' && !companyName) {
+        googleRoleErrorEl.innerText = 'Business / Company name is required for business accounts.';
+        googleRoleErrorEl.style.display = 'block';
+        return;
+      }
+
       googleRoleErrorEl.style.display = 'none';
-      selectRoleBizBtn.disabled = true;
-      selectRoleTruckBtn.disabled = true;
+      submitGoogleBtn.disabled = true;
 
       try {
-        const res = await API.completeGoogleRegistration(pendingGoogleOnboardingToken, role);
+        const res = await API.completeGoogleRegistration(pendingGoogleOnboardingToken, selectedGoogleRole, phone, companyName);
         API.setToken(res.token);
         API.setUser(res.user);
         googleRoleModal.style.display = 'none';
+
         NotificationSystem.showSuccess({
           title: 'Registration Successful',
           message: 'Welcome to CargoNet! Your account has been registered successfully.',
           buttonText: 'Continue',
           onConfirm: () => {
             if (res.user.role === 'TRUCK_OWNER' || res.user.role === 'TRANSPORTER') {
-              window.location.href = 'truck-owner-dashboard.html';
+              window.location.href = 'register-truck.html';
             } else {
               window.location.href = 'business-dashboard.html';
             }
@@ -587,13 +667,10 @@
         googleRoleErrorEl.innerText = err.message || 'Failed to complete Google registration.';
         googleRoleErrorEl.style.display = 'block';
       } finally {
-        selectRoleBizBtn.disabled = false;
-        selectRoleTruckBtn.disabled = false;
+        submitGoogleBtn.disabled = false;
       }
-    }
+    });
 
-    selectRoleBizBtn.addEventListener('click', () => completeGoogleRoleSelection('BUSINESS'));
-    selectRoleTruckBtn.addEventListener('click', () => completeGoogleRoleSelection('TRUCK_OWNER'));
     cancelGoogleRoleBtn.addEventListener('click', () => {
       googleRoleModal.style.display = 'none';
       pendingGoogleOnboardingToken = null;

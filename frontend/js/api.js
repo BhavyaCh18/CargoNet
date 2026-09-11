@@ -105,7 +105,7 @@ export const API = {
     return this.post('/auth/google', { idToken });
   },
 
-  completeGoogleRegistration(onboardingToken, role) {
-    return this.post('/auth/google', { onboardingToken, role });
+  completeGoogleRegistration(onboardingToken, role, phone = '', companyName = '', name = '') {
+    return this.post('/auth/google', { onboardingToken, role, phone, companyName, name });
   }
 };

@@ -1,54 +1,73 @@
 import { API } from './api.js';
 import { formatPickupSchedule } from './business.js';
 
-const CITY_COORDS = {
-  'hyderabad': [17.3850, 78.4867],
-  'bengaluru': [12.9716, 77.5946],
-  'bangalore': [12.9716, 77.5946],
-  'chennai': [13.0827, 80.2707],
-  'mumbai': [19.0760, 72.8777],
-  'delhi': [28.6139, 77.2090],
-  'new delhi': [28.6139, 77.2090],
-  'kolkata': [22.5726, 88.3639],
-  'pune': [18.5204, 73.8567],
-  'jaipur': [26.9124, 75.7873],
-  'ahmedabad': [23.0225, 72.5714],
-  'surat': [21.1702, 72.8311],
-  'visakhapatnam': [17.6868, 83.2185],
-  'vizag': [17.6868, 83.2185],
-  'vijayawada': [16.5062, 80.6480],
-  'nagpur': [21.1458, 79.0882],
-  'lucknow': [26.8467, 80.9462],
-  'kochi': [9.9312, 76.2673],
-  'cochin': [9.9312, 76.2673],
-  'coimbatore': [11.0168, 76.9558],
-  'indore': [22.7196, 75.8577],
-  'bhopal': [23.2599, 77.4126],
-  'patna': [25.5941, 85.1376],
-  'bhubaneswar': [20.2961, 85.8245]
-};
-
-function getCityCoordinates(location) {
-  if (!location || typeof location !== 'string') return null;
-
-  const normalized = location.trim().toLowerCase();
-  if (CITY_COORDS[normalized]) {
-    return CITY_COORDS[normalized];
+const KNOWN_CORRIDORS = [
+  {
+    pair: ['hyderabad', 'bengaluru'],
+    stops: ['Hyderabad', 'Jadcherla', 'Kurnool', 'Gooty', 'Anantapur', 'Penukonda', 'Bengaluru']
+  },
+  {
+    pair: ['bengaluru', 'hyderabad'],
+    stops: ['Bengaluru', 'Penukonda', 'Anantapur', 'Gooty', 'Kurnool', 'Jadcherla', 'Hyderabad']
+  },
+  {
+    pair: ['hyderabad', 'bangalore'],
+    stops: ['Hyderabad', 'Jadcherla', 'Kurnool', 'Gooty', 'Anantapur', 'Penukonda', 'Bengaluru']
+  },
+  {
+    pair: ['bangalore', 'hyderabad'],
+    stops: ['Bengaluru', 'Penukonda', 'Anantapur', 'Gooty', 'Kurnool', 'Jadcherla', 'Hyderabad']
+  },
+  {
+    pair: ['mumbai', 'pune'],
+    stops: ['Mumbai', 'Navi Mumbai', 'Lonavala', 'Pimpri-Chinchwad', 'Pune']
+  },
+  {
+    pair: ['pune', 'mumbai'],
+    stops: ['Pune', 'Pimpri-Chinchwad', 'Lonavala', 'Navi Mumbai', 'Mumbai']
+  },
+  {
+    pair: ['delhi', 'jaipur'],
+    stops: ['Delhi', 'Gurugram', 'Rewari', 'Kotputli', 'Shahpura', 'Jaipur']
+  },
+  {
+    pair: ['jaipur', 'delhi'],
+    stops: ['Jaipur', 'Shahpura', 'Kotputli', 'Rewari', 'Gurugram', 'Delhi']
+  },
+  {
+    pair: ['chennai', 'bengaluru'],
+    stops: ['Chennai', 'Kanchipuram', 'Vellore', 'Ambur', 'Hosur', 'Bengaluru']
+  },
+  {
+    pair: ['bengaluru', 'chennai'],
+    stops: ['Bengaluru', 'Hosur', 'Ambur', 'Vellore', 'Kanchipuram', 'Chennai']
   }
+];
 
-  for (const [city, coords] of Object.entries(CITY_COORDS)) {
-    if (normalized.includes(city)) {
-      return coords;
+function getRouteStops(pickup, destination, currentLocation) {
+  const pickupNorm = (pickup || '').trim().toLowerCase();
+  const destNorm = (destination || '').trim().toLowerCase();
+
+  for (const corridor of KNOWN_CORRIDORS) {
+    if (pickupNorm.includes(corridor.pair[0]) && destNorm.includes(corridor.pair[1])) {
+      return corridor.stops;
     }
   }
 
-  return null;
+  // Fallback stops for dynamic routes
+  const stops = [pickup || 'Pickup'];
+  if (currentLocation && 
+      !currentLocation.toLowerCase().includes(pickupNorm) && 
+      !currentLocation.toLowerCase().includes(destNorm)) {
+    stops.push(currentLocation);
+  } else {
+    stops.push('Route Checkpoint');
+  }
+  stops.push(destination || 'Destination');
+  return stops;
 }
 
 export const TrackingModule = {
-  map: null,
-  marker: null,
-
   async init() {
     const urlParams = new URLSearchParams(window.location.search);
     const bookingId = urlParams.get('bookingId');
@@ -62,7 +81,7 @@ export const TrackingModule = {
       const tracking = data.tracking;
 
       infoContainer.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #E2E8F0; padding-bottom:12px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #E2E8F0; padding-bottom:12px; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
           <div>
             <span class="pill-badge" style="margin:0; background:#0B1220; color:#FFFFFF;">BOOKING #${booking.bookingCode}</span>
             <h2 style="font-size:1.3rem; font-weight:800; margin-top:6px; color:#0B1220;">${booking.cargoName} (${booking.weight} Tons)</h2>
@@ -76,7 +95,7 @@ export const TrackingModule = {
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px; font-size:0.9rem; margin-bottom:16px;">
           <div>
             <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block; text-transform:uppercase;">ROUTE</span>
-            <strong>${booking.pickupLocation} &rarr; ${booking.destination}</strong>
+            <strong>${booking.pickupLocation} &rrArr; ${booking.destination}</strong>
           </div>
           <div>
             <span style="color:#64748B; font-size:0.75rem; font-weight:700; display:block; text-transform:uppercase;">CURRENT POSITION</span>
@@ -95,84 +114,136 @@ export const TrackingModule = {
         </div>
       `;
 
-      this.initMap(
-        tracking.latitude,
-        tracking.longitude,
+      this.renderJourney(
         tracking.currentLocation,
         booking.pickupLocation,
-        booking.destination
+        booking.destination,
+        booking.status
       );
     } catch (err) {
       infoContainer.innerHTML = `<p style="color:red;">Error loading tracking details: ${err.message}</p>`;
     }
   },
 
-  initMap(lat, lng, locationName, pickupLocation, destination) {
-    const mapElement = document.getElementById('leaflet-map');
-    if (!mapElement || typeof L === 'undefined') return;
+  renderJourney(currentLoc, pickup, destination, status) {
+    const journeyContainer = document.getElementById('tracking-journey-container');
+    if (!journeyContainer) return;
 
-    if (this.map) {
-      this.map.remove();
-    }
+    const stops = getRouteStops(pickup, destination, currentLoc);
+    const activeLocation = (currentLoc || pickup || '').trim();
 
-    const hasCoordinates =
-      Number.isFinite(Number(lat)) &&
-      Number.isFinite(Number(lng));
+    let activeIndex = 0;
+    const statusUpper = (status || '').toUpperCase();
 
-    const trackingCoords = hasCoordinates
-      ? [Number(lat), Number(lng)]
-      : getCityCoordinates(locationName);
-
-    const pickupCoords = getCityCoordinates(pickupLocation);
-    const destCoords = getCityCoordinates(destination);
-
-    const centerCoords = trackingCoords || pickupCoords || destCoords || [17.3850, 78.4867];
-
-    this.map = L.map('leaflet-map').setView(centerCoords, 7);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(this.map);
-
-    const routePoints = [];
-
-    if (pickupCoords) {
-      routePoints.push(pickupCoords);
-      L.circleMarker(pickupCoords, { radius: 8, color: '#16A34A', fillColor: '#22C55E', fillOpacity: 0.9 })
-        .addTo(this.map)
-        .bindPopup(`<b>📦 Pickup Point</b><br>${pickupLocation}`);
-    }
-
-    if (trackingCoords) {
-      if (!pickupCoords || trackingCoords[0] !== pickupCoords[0] || trackingCoords[1] !== pickupCoords[1]) {
-        routePoints.push(trackingCoords);
+    if (statusUpper === 'COMPLETED' || statusUpper === 'DELIVERED') {
+      activeIndex = stops.length - 1;
+    } else {
+      const matchIndex = stops.findIndex(stop => 
+        activeLocation.toLowerCase().includes(stop.toLowerCase()) || 
+        stop.toLowerCase().includes(activeLocation.toLowerCase())
+      );
+      if (matchIndex !== -1) {
+        activeIndex = matchIndex;
+      } else if (statusUpper === 'IN_TRANSIT') {
+        activeIndex = Math.max(1, Math.floor(stops.length / 2));
+      } else if (statusUpper === 'PICKED_UP') {
+        activeIndex = Math.min(1, stops.length - 1);
+      } else {
+        activeIndex = 0;
       }
-      this.marker = L.marker(trackingCoords).addTo(this.map)
-        .bindPopup(`<b>🚚 Truck Position</b><br>${locationName || 'In Transit'}`)
-        .openPopup();
     }
 
-    if (destCoords) {
-      if (!trackingCoords || destCoords[0] !== trackingCoords[0] || destCoords[1] !== trackingCoords[1]) {
-        routePoints.push(destCoords);
-      }
-      L.circleMarker(destCoords, { radius: 8, color: '#DC2626', fillColor: '#EF4444', fillOpacity: 0.9 })
-        .addTo(this.map)
-        .bindPopup(`<b>🏁 Destination Point</b><br>${destination}`);
-    }
+    const progressPercent = stops.length > 1 ? Math.round((activeIndex / (stops.length - 1)) * 100) : 0;
 
-    if (routePoints.length >= 2) {
-      L.polyline(routePoints, {
-        color: '#0B1220',
-        weight: 4,
-        opacity: 0.8,
-        dashArray: '8, 8'
-      }).addTo(this.map);
+    journeyContainer.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px; border-bottom:1px solid #E2E8F0; padding-bottom:16px;">
+        <div>
+          <h3 style="font-size:1.15rem; font-weight:800; color:#0B1220; margin:0; display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.3rem;">🚚</span> Shipment Journey & Route Checkpoints
+          </h3>
+          <p style="font-size:0.85rem; color:#64748B; margin:4px 0 0 0;">
+            Live checkpoint tracking along the transit corridor
+          </p>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="text-align:right;">
+            <div style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase;">Journey Progress</div>
+            <div style="font-size:1.1rem; font-weight:800; color:#2563EB;">${progressPercent}%</div>
+          </div>
+        </div>
+      </div>
 
-      this.map.fitBounds(L.latLngBounds(routePoints), { padding: [50, 50], maxZoom: 10 });
-    } else if (routePoints.length === 1) {
-      this.map.setView(routePoints[0], 10);
-    }
+      <!-- Timeline Stepper -->
+      <div style="position:relative; margin: 32px 10px 32px 10px; overflow-x:auto; padding: 10px 0;">
+        <div style="min-width: 680px; position:relative;">
+          <!-- Background Bar -->
+          <div style="position:absolute; top:22px; left:20px; right:20px; height:6px; background:#E2E8F0; border-radius:3px; z-index:1;"></div>
+          <!-- Filled Progress Bar -->
+          <div style="position:absolute; top:22px; left:20px; width:calc((100% - 40px) * ${progressPercent / 100}); height:6px; background:linear-gradient(90deg, #16A34A, #2563EB); border-radius:3px; z-index:2; transition: width 0.4s ease;"></div>
+
+          <!-- Checkpoint Steps -->
+          <div style="display:flex; justify-content:space-between; position:relative; z-index:3;">
+            ${stops.map((stop, idx) => {
+              const isPassed = idx < activeIndex;
+              const isCurrent = idx === activeIndex;
+              
+              let circleBg = '#F1F5F9';
+              let circleBorder = '#CBD5E1';
+              let iconContent = `<span style="font-size:0.75rem; color:#64748B; font-weight:700;">${idx + 1}</span>`;
+              let labelColor = '#64748B';
+              let statusText = 'Upcoming Checkpoint';
+
+              if (isPassed) {
+                circleBg = '#16A34A';
+                circleBorder = '#16A34A';
+                iconContent = `<span style="color:#FFFFFF; font-weight:800; font-size:0.85rem;">✓</span>`;
+                labelColor = '#0B1220';
+                statusText = 'Passed';
+              } else if (isCurrent) {
+                circleBg = '#2563EB';
+                circleBorder = '#3B82F6';
+                iconContent = `<span style="font-size:1rem;">🚚</span>`;
+                labelColor = '#1E40AF';
+                if (idx === 0) statusText = 'Pickup Location';
+                else if (idx === stops.length - 1) statusText = 'Destination Reached';
+                else statusText = 'Current Truck Position';
+              } else if (idx === 0) {
+                statusText = 'Pickup Location';
+              } else if (idx === stops.length - 1) {
+                statusText = 'Destination';
+              }
+
+              return `
+                <div style="display:flex; flex-direction:column; align-items:center; text-align:center; flex:1; max-width:140px;">
+                  <div style="width:44px; height:44px; border-radius:50%; background:${circleBg}; border:3px solid ${circleBorder}; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom:10px; transition: all 0.3s ease;">
+                    ${iconContent}
+                  </div>
+                  <div style="font-weight:${isCurrent ? '800' : '700'}; font-size:0.85rem; color:${labelColor}; line-height:1.2; word-break:break-word;">
+                    ${stop}
+                  </div>
+                  <div style="font-size:0.72rem; color:${isCurrent ? '#2563EB' : '#64748B'}; font-weight:${isCurrent ? '700' : '500'}; margin-top:4px;">
+                    ${statusText}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Route details bar -->
+      <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px 16px; margin-top:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.85rem;">
+          <span style="font-weight:700; color:#0B1220;">📍 Active Location:</span>
+          <span style="color:#2563EB; font-weight:700; background:#EFF6FF; padding:2px 8px; border-radius:4px; border:1px solid #BFDBFE;">
+            ${activeLocation}
+          </span>
+        </div>
+        <div style="font-size:0.8rem; color:#64748B;">
+          Corridor Checkpoints: <strong>${stops.length} Towns / Hubs</strong>
+        </div>
+      </div>
+    `;
   }
 };
 

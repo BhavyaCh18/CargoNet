@@ -1017,7 +1017,9 @@ module.exports = async (req, res) => {
             const {
                 idToken,
                 onboardingToken,
-                role
+                role,
+                phone,
+                companyName: reqCompanyName
             } = req.body || {};
 
             // ========================================
@@ -1044,6 +1046,25 @@ module.exports = async (req, res) => {
                         error:
                             "Invalid role selection. Admin self-registration is strictly prohibited."
                     });
+                }
+
+                const userPhone = phone ? String(phone).trim() : "";
+                if (!userPhone) {
+                    return res.status(400).json({
+                        error: "Phone number is required to complete registration."
+                    });
+                }
+
+                let userCompanyName = "";
+                if (normalizedRole === "BUSINESS") {
+                    userCompanyName = reqCompanyName ? String(reqCompanyName).trim() : "";
+                    if (!userCompanyName) {
+                        return res.status(400).json({
+                            error: "Business / Company name is required for business accounts."
+                        });
+                    }
+                } else {
+                    userCompanyName = reqCompanyName ? String(reqCompanyName).trim() : "Individual Truck Owner";
                 }
 
                 let decoded;
@@ -1162,13 +1183,6 @@ module.exports = async (req, res) => {
                         10
                     );
 
-                const companyName =
-                    normalizedRole ===
-                        "BUSINESS"
-                        ? name ||
-                        "Business Shipper"
-                        : "Individual Truck Owner";
-
                 const result =
                     await pool.query(
                         `
@@ -1188,9 +1202,9 @@ module.exports = async (req, res) => {
                             $1,
                             $2,
                             $3,
-                            NULL,
                             $4,
                             $5,
+                            $6,
                             'ACTIVE',
                             NOW()
                         )
@@ -1200,7 +1214,8 @@ module.exports = async (req, res) => {
                             name,
                             email,
                             hashedPassword,
-                            companyName,
+                            userPhone,
+                            userCompanyName,
                             normalizedRole
                         ]
                     );
